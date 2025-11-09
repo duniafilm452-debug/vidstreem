@@ -1,0 +1,171 @@
+/* Detail Page Styles */
+.detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 15px;
+}
+
+.back-btn {
+  background: #272727;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  transition: background 0.3s ease;
+}
+
+.back-btn:hover {
+  background: #3d3d3d;
+}
+
+.video-container {
+  width: 100%;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+
+.video-player {
+  width: 100%;
+  height: 400px;
+  background: #000;
+}
+
+.video-info {
+  margin-bottom: 30px;
+}
+
+.video-title {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: white;
+}
+
+.video-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.video-views {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.video-category {
+  background: #ff0000;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.video-description {
+  color: #ccc;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 40px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.share-btn {
+  background: #272727;
+  color: white;
+}
+
+.download-btn {
+  background: #ff0000;
+  color: white;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.btn-icon {
+  font-size: 1.1rem;
+}
+
+/* Related Videos */
+.related-videos {
+  margin-top: 40px;
+}
+
+.section-title {
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+  color: white;
+  border-bottom: 2px solid #272727;
+  padding-bottom: 10px;
+}
+
+/* Responsive Design untuk Detail Page */
+@media (max-width: 768px) {
+  .video-player {
+    height: 300px;
+  }
+  
+  .video-title {
+    font-size: 1.3rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .action-btn {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .video-player {
+    height: 250px;
+  }
+  
+  .video-title {
+    font-size: 1.1rem;
+  }
+  
+  .video-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .detail-container {
+    padding: 15px 10px;
+  }
+}

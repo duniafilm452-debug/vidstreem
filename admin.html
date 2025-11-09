@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel - DuniaFilm</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <p>Memuat data...</p>
+  </div>
+
+  <!-- Header -->
+  <header class="admin-header">
+    <div class="header-container">
+      <div class="logo">
+        <h1>🎬 Admin DuniaFilm</h1>
+        <p class="subtitle">Content Management System</p>
+      </div>
+      <nav class="admin-nav">
+        <button onclick="window.location.href='index.html'" class="nav-btn">
+          <span class="btn-icon">🏠</span> Kembali ke Website
+        </button>
+        <button onclick="window.location.reload()" class="nav-btn refresh-btn">
+          <span class="btn-icon">🔄</span> Refresh
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Tab Navigation -->
+  <nav class="admin-tabs">
+    <div class="tabs-container">
+      <button class="tab-btn active" data-tab="dashboard">
+        <span class="tab-icon">📊</span>
+        <span class="tab-text">Dashboard</span>
+      </button>
+      <button class="tab-btn" data-tab="add-movie">
+        <span class="tab-icon">➕</span>
+        <span class="tab-text">Tambah Film</span>
+      </button>
+      <button class="tab-btn" data-tab="manage-movies">
+        <span class="tab-icon">✏️</span>
+        <span class="tab-text">Kelola Film</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <div class="admin-container">
+      
+      <!-- Dashboard Tab -->
+      <div id="dashboard-tab" class="tab-content active">
+        <!-- Welcome Section -->
+        <section class="welcome-section">
+          <div class="welcome-card">
+            <div class="welcome-content">
+              <h2>Selamat Datang di Admin Panel! 🎉</h2>
+              <p>Kelola konten film Anda dengan mudah menggunakan dashboard ini.</p>
+              <div class="welcome-actions">
+                <button class="welcome-btn primary" onclick="switchTab('add-movie')">
+                  <span class="btn-icon">➕</span> Tambah Film Baru
+                </button>
+                <button class="welcome-btn secondary" onclick="switchTab('manage-movies')">
+                  <span class="btn-icon">✏️</span> Kelola Film
+                </button>
+              </div>
+            </div>
+            <div class="welcome-stats">
+              <div class="stat-item">
+                <div class="stat-number" id="total-movies-count">0</div>
+                <div class="stat-label">Total Film</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-number" id="total-views-count">0</div>
+                <div class="stat-label">Total Penonton</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Statistics Section -->
+        <section class="stats-section">
+          <div class="section-header">
+            <h2>📊 Dashboard Analytics</h2>
+            <div class="last-updated">
+              Terakhir update: <span id="update-time">-</span>
+            </div>
+          </div>
+          <div id="stats-container" class="stats-container">
+            <div class="stats-placeholder">
+              <div class="loading-spinner small"></div>
+              <p>Memuat statistik...</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="quick-actions-section">
+          <h2>⚡ Quick Actions</h2>
+          <div class="quick-actions-grid">
+            <div class="quick-action-card" onclick="switchTab('add-movie')">
+              <div class="action-icon">➕</div>
+              <h3>Tambah Film Baru</h3>
+              <p>Tambahkan film baru ke katalog</p>
+            </div>
+            <div class="quick-action-card" onclick="switchTab('manage-movies')">
+              <div class="action-icon">✏️</div>
+              <h3>Kelola Film</h3>
+              <p>Edit dan hapus film yang ada</p>
+            </div>
+            <div class="quick-action-card" onclick="exportData()">
+              <div class="action-icon">📊</div>
+              <h3>Export Data</h3>
+              <p>Download data film dalam format CSV</p>
+            </div>
+            <div class="quick-action-card" onclick="window.location.reload()">
+              <div class="action-icon">🔄</div>
+              <h3>Refresh Data</h3>
+              <p>Perbarui data terbaru</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Recent Movies -->
+        <section class="recent-movies-section">
+          <div class="section-header">
+            <h2>🎬 Film Terbaru</h2>
+            <button class="view-all-btn" onclick="switchTab('manage-movies')">Lihat Semua →</button>
+          </div>
+          <div id="recent-movies-container" class="recent-movies-container">
+            <div class="loading-content">
+              <div class="loading-spinner"></div>
+              <p>Memuat film terbaru...</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Add Movie Tab -->
+      <div id="add-movie-tab" class="tab-content">
+        <section class="form-section">
+          <div class="section-header">
+            <h2>➕ Tambah Film Baru</h2>
+            <div class="form-help-text">
+              <span class="required-mark">*</span> Wajib diisi
+            </div>
+          </div>
+          
+          <form id="movie-form" class="movie-form">
+            <!-- Required Fields -->
+            <div class="required-fields">
+              <div class="form-group">
+                <label for="movie-title" class="required">
+                  <span class="label-icon">🎬</span>
+                  Judul Film *
+                </label>
+                <input type="text" id="movie-title" required placeholder="Masukkan judul film...">
+                <div class="form-help">Judul film akan ditampilkan di halaman utama</div>
+              </div>
+              
+              <div class="form-group">
+                <label for="movie-video-url" class="required">
+                  <span class="label-icon">🎥</span>
+                  URL Video *
+                </label>
+                <input type="url" id="movie-video-url" required placeholder="https://...">
+                <div class="form-help">Support: YouTube, Google Drive, Cloudflare R2, Vimeo, dll.</div>
+              </div>
+            </div>
+
+            <!-- Optional Fields -->
+            <div class="optional-section">
+              <h3 class="optional-title">
+                <span class="optional-icon">📋</span>
+                Informasi Tambahan (Opsional)
+              </h3>
+              
+              <div class="optional-grid">
+                <div class="form-group">
+                  <label for="movie-description">
+                    <span class="label-icon">📝</span>
+                    Deskripsi
+                  </label>
+                  <textarea id="movie-description" rows="3" placeholder="Masukkan deskripsi film (opsional)..."></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label for="movie-category">
+                    <span class="label-icon">🏷️</span>
+                    Kategori
+                  </label>
+                  <select id="movie-category">
+                    <option value="">Pilih Kategori (opsional)</option>
+                    <option value="drakor">Drakor</option>
+                    <option value="dracin">Dracin</option>
+                    <option value="donghua">Donghua</option>
+                    <option value="lainnya">Lainnya</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="movie-download-url">
+                    <span class="label-icon">⬇️</span>
+                    URL Download
+                  </label>
+                  <input type="url" id="movie-download-url" placeholder="https://... (opsional)">
+                </div>
+
+                <div class="form-group">
+                  <label for="movie-thumbnail-url">
+                    <span class="label-icon">🖼️</span>
+                    URL Thumbnail Kustom
+                  </label>
+                  <input type="url" id="movie-thumbnail-url" placeholder="https://... (opsional)">
+                  <div class="form-help">Kosongkan untuk generate otomatis dari video</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" class="cancel-btn" onclick="switchTab('dashboard')">
+                <span class="btn-icon">❌</span> Batal
+              </button>
+              <button type="submit" class="submit-btn">
+                <span class="btn-icon">💾</span> Simpan Film
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Preview Section -->
+        <section class="preview-section">
+          <h3>👁️ Preview Film</h3>
+          <div id="form-preview" class="form-preview">
+            <div class="preview-placeholder">
+              <span class="preview-icon">👆</span>
+              <p>Isi form untuk melihat preview</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Manage Movies Tab -->
+      <div id="manage-movies-tab" class="tab-content">
+        <!-- Bulk Actions -->
+        <div id="bulk-actions" class="bulk-actions" style="display: none;">
+          <div class="bulk-actions-info">
+            <span class="selected-icon">✅</span>
+            <span id="selected-count">0 film terpilih</span>
+          </div>
+          <div class="bulk-actions-buttons">
+            <button id="bulk-delete-btn" class="bulk-delete-btn">
+              <span class="btn-icon">🗑️</span> Hapus Terpilih
+            </button>
+            <button class="bulk-cancel-btn" onclick="selectAllMovies(false)">
+              <span class="btn-icon">❌</span> Batal Pilih
+            </button>
+          </div>
+        </div>
+
+        <section class="management-section">
+          <div class="section-header">
+            <h2>✏️ Kelola Film</h2>
+            <div class="management-actions">
+              <div class="search-box">
+                <input type="text" id="admin-search" placeholder="Cari film...">
+                <button id="admin-search-btn" class="search-btn">
+                  <span class="btn-icon">🔍</span>
+                </button>
+              </div>
+              <button id="export-btn" class="export-btn">
+                <span class="btn-icon">📊</span> Export Data
+              </button>
+            </div>
+          </div>
+
+          <!-- Table Controls -->
+          <div class="table-header">
+            <div class="table-actions">
+              <div class="bulk-select">
+                <input type="checkbox" id="select-all" onchange="selectAllMovies(this.checked)">
+                <label for="select-all">Pilih Semua</label>
+              </div>
+              <div class="table-filters">
+                <select id="category-filter" class="category-filter">
+                  <option value="all">Semua Kategori</option>
+                  <option value="drakor">Drakor</option>
+                  <option value="dracin">Dracin</option>
+                  <option value="donghua">Donghua</option>
+                  <option value="lainnya">Lainnya</option>
+                </select>
+                <span class="filter-info" id="filter-info">Total: <span id="total-count">0</span> film</span>
+              </div>
+            </div>
+            <div class="table-stats">
+              <span class="stats-item">
+                <span class="stats-icon">👁️</span>
+                Total Penonton: <span id="total-views">0</span>
+              </span>
+            </div>
+          </div>
+          
+          <!-- Movies Table -->
+          <div class="movies-table-container">
+            <table class="movies-table">
+              <thead>
+                <tr>
+                  <th class="checkbox-cell">
+                    <input type="checkbox" id="header-checkbox" onchange="selectAllMovies(this.checked)">
+                  </th>
+                  <th class="thumbnail-cell">Thumbnail</th>
+                  <th class="title-cell">Judul</th>
+                  <th class="category-cell">Kategori</th>
+                  <th class="views-cell">Penonton</th>
+                  <th class="date-cell">Tanggal</th>
+                  <th class="actions-cell">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="movies-table-body">
+                <tr>
+                  <td colspan="7" class="loading">
+                    <div class="loading-content">
+                      <div class="loading-spinner"></div>
+                      <p>Memuat data film...</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Table Footer -->
+          <div class="table-footer">
+            <div class="table-pagination">
+              <button class="pagination-btn" disabled>
+                <span class="btn-icon">⬅️</span> Sebelumnya
+              </button>
+              <span class="pagination-info">Halaman 1 dari 1</span>
+              <button class="pagination-btn" disabled>
+                Selanjutnya <span class="btn-icon">➡️</span>
+              </button>
+            </div>
+            <div class="table-summary">
+              Menampilkan <span id="display-count">0</span> dari <span id="total-movies">0</span> film
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="admin-footer">
+    <div class="footer-container">
+      <div class="footer-info">
+        <span class="footer-icon">⚡</span>
+        <span>Admin Panel - DuniaFilm</span>
+      </div>
+      <div class="footer-actions">
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="footer-btn">
+          <span class="btn-icon">⬆️</span> Ke Atas
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="admin.js"></script>
+</body>
+</html>

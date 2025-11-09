@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DuniaFilm - Nonton Film Gratis</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Header dengan Search -->
+  <header class="main-header">
+    <div class="header-container">
+      <div class="logo">
+        <h1>Dunia Film</h1>
+      </div>
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="Cari film...">
+        <button id="search-btn">🔍</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Kategori -->
+    <section class="categories-section">
+      <div class="categories-container">
+        <button class="category-btn active" data-category="all">Semua</button>
+        <button class="category-btn" data-category="drakor">Drakor</button>
+        <button class="category-btn" data-category="dracin">Dracin</button>
+        <button class="category-btn" data-category="donghua">Donghua</button>
+        <button class="category-btn" data-category="lainnya">Lainnya</button>
+      </div>
+    </section>
+
+    <!-- Tab Section -->
+    <section class="tabs-section">
+      <div class="tabs-container">
+        <button class="tab-btn active" data-tab="recommended">Rekomendasi</button>
+        <button class="tab-btn" data-tab="latest">Terbaru</button>
+        <button class="tab-btn" data-tab="popular">Populer</button>
+      </div>
+    </section>
+
+    <!-- Movies Grid -->
+    <section class="movies-section">
+      <div id="movies-grid" class="movies-grid">
+        <div class="loading-movies">
+          <div class="spinner"></div>
+          <p>Memuat film...</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>

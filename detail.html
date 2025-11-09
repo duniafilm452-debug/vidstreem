@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detail Film - DuniaFilm</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="detail.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="main-header">
+    <div class="header-container">
+      <div class="logo">
+        <h1>Dunia Film</h1>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="detail-container">
+      <!-- Tombol Kembali -->
+      <button class="back-btn" onclick="window.location.href='index.html'">
+        <span>←</span> Kembali
+      </button>
+
+      <!-- Video Player -->
+      <div class="video-container">
+        <video id="video-player" class="video-player" controls>
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      <!-- Video Info -->
+      <div class="video-info">
+        <h1 id="video-title" class="video-title">Judul Film</h1>
+        <div class="video-meta">
+          <span id="video-views" class="video-views">▶ 0 penonton</span>
+          <span id="video-category" class="video-category">Kategori</span>
+        </div>
+        <p id="video-description" class="video-description">Deskripsi film akan muncul di sini.</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button id="share-btn" class="action-btn share-btn">
+          <span class="btn-icon">📤</span>
+          <span class="btn-text">Share</span>
+        </button>
+        <button id="download-btn" class="action-btn download-btn">
+          <span class="btn-icon">⬇️</span>
+          <span class="btn-text">Download</span>
+        </button>
+      </div>
+
+      <!-- Video Lainnya -->
+      <section class="related-videos">
+        <h2 class="section-title">Video Lainnya</h2>
+        <div id="related-grid" class="movies-grid">
+          <div class="loading-movies">
+            <div class="spinner"></div>
+            <p>Memuat video...</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="detail.js"></script>
+</body>
+</html>
