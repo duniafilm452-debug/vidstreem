@@ -14,13 +14,15 @@ let currentVideoUrl = '';
 
 // Inisialisasi aplikasi
 document.addEventListener('DOMContentLoaded', async () => {
-  // Check login status - HANYA dijalankan jika admin panel ada
   const adminPanel = document.getElementById('admin-panel');
   if (!adminPanel) return;
   
+  // Jika belum login, TIDAK melakukan redirect ke 'admin.html' (itu halaman ini sendiri)
+  // Sebagai gantinya: tampilkan layar login dan sembunyikan panel admin
   if (localStorage.getItem('adminLoggedIn') !== 'true') {
-    // Redirect ke halaman login jika belum login
-    window.location.href = 'admin.html';
+    const loginScreen = document.getElementById('login-screen');
+    if (loginScreen) loginScreen.style.display = 'block';
+    if (adminPanel) adminPanel.style.display = 'none';
     return;
   }
 
