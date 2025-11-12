@@ -1,374 +1,384 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Panel - DuniaFilm</title>
-  <link rel="stylesheet" href="admin.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - DuniaFilm</title>
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
-  <!-- Loading Overlay -->
-  <div id="loading-overlay" class="loading-overlay">
-    <div class="loading-spinner"></div>
-    <p>Memuat data...</p>
-  </div>
-
-  <!-- Header -->
-  <header class="admin-header">
-    <div class="header-container">
-      <div class="logo">
-        <h1>🎬 Admin DuniaFilm</h1>
-        <p class="subtitle">Content Management System</p>
-      </div>
-      <nav class="admin-nav">
-        <button onclick="window.location.href='index.html'" class="nav-btn">
-          <span class="btn-icon">🏠</span> Kembali ke Website
-        </button>
-        <button onclick="window.location.reload()" class="nav-btn refresh-btn">
-          <span class="btn-icon">🔄</span> Refresh
-        </button>
-      </nav>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <h1>🎬 DuniaFilm</h1>
+                    <p>Admin Panel</p>
+                </div>
+                
+                <form id="login-form" class="login-form">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required 
+                               placeholder="Masukkan username">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required 
+                               placeholder="Masukkan password">
+                    </div>
+                    
+                    <button type="submit" class="login-btn">
+                        <span class="btn-icon">🔐</span> Login
+                    </button>
+                </form>
+                
+                <div class="login-footer">
+                    <p>Hanya untuk administrator</p>
+                </div>
+            </div>
+        </div>
     </div>
-  </header>
 
-  <!-- Tab Navigation -->
-  <nav class="admin-tabs">
-    <div class="tabs-container">
-      <button class="tab-btn active" data-tab="dashboard">
-        <span class="tab-icon">📊</span>
-        <span class="tab-text">Dashboard</span>
-      </button>
-      <button class="tab-btn" data-tab="add-movie">
-        <span class="tab-icon">➕</span>
-        <span class="tab-text">Tambah Film</span>
-      </button>
-      <button class="tab-btn" data-tab="manage-movies">
-        <span class="tab-icon">✏️</span>
-        <span class="tab-text">Kelola Film</span>
-      </button>
-    </div>
-  </nav>
+    <!-- Admin Panel (Hidden until login) -->
+    <div id="admin-panel" class="admin-panel" style="display: none;">
+        <div class="admin-container">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="header-content">
+                    <h1>🎬 DuniaFilm</h1>
+                    <div class="header-info">
+                        <span id="update-time"></span>
+                        <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+                    </div>
+                </div>
+            </header>
 
-  <!-- Main Content -->
-  <main class="admin-main">
-    <div class="admin-container">
-      
-      <!-- Dashboard Tab -->
-      <div id="dashboard-tab" class="tab-content active">
-        <!-- Welcome Section -->
-        <section class="welcome-section">
-          <div class="welcome-card">
-            <div class="welcome-content">
-              <h2>Selamat Datang di Admin Panel! 🎉</h2>
-              <p>Kelola konten film Anda dengan mudah menggunakan dashboard ini.</p>
-              <div class="welcome-actions">
-                <button class="welcome-btn primary" onclick="switchTab('add-movie')">
-                  <span class="btn-icon">➕</span> Tambah Film Baru
-                </button>
-                <button class="welcome-btn secondary" onclick="switchTab('manage-movies')">
-                  <span class="btn-icon">✏️</span> Kelola Film
-                </button>
-              </div>
-            </div>
-            <div class="welcome-stats">
-              <div class="stat-item">
-                <div class="stat-number" id="total-movies-count">0</div>
-                <div class="stat-label">Total Film</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-number" id="total-views-count">0</div>
-                <div class="stat-label">Total Penonton</div>
-              </div>
-            </div>
-          </div>
-        </section>
+            <!-- Navigation Tabs -->
+            <nav class="admin-tabs">
+                <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+                <button class="tab-btn" data-tab="add-movie">📤 Upload Film</button>
+                <button class="tab-btn" data-tab="manage-movies">🎬 Kelola Film</button>
+            </nav>
 
-        <!-- Statistics Section -->
-        <section class="stats-section">
-          <div class="section-header">
-            <h2>📊 Dashboard Analytics</h2>
-            <div class="last-updated">
-              Terakhir update: <span id="update-time">-</span>
-            </div>
-          </div>
-          <div id="stats-container" class="stats-container">
-            <div class="stats-placeholder">
-              <div class="loading-spinner small"></div>
-              <p>Memuat statistik...</p>
-            </div>
-          </div>
-        </section>
+            <!-- Main Content -->
+            <main class="admin-content">
+                <!-- Dashboard Tab -->
+                <div id="dashboard-tab" class="tab-content active">
+                    <div class="section-header">
+                        <h2>📊 Dashboard Overview</h2>
+                    </div>
+                    
+                    <!-- Statistics -->
+                    <div class="stats-section">
+                        <div id="stats-container">
+                            <div class="loading">Memuat statistik...</div>
+                        </div>
+                    </div>
 
-        <!-- Quick Actions -->
-        <section class="quick-actions-section">
-          <h2>⚡ Quick Actions</h2>
-          <div class="quick-actions-grid">
-            <div class="quick-action-card" onclick="switchTab('add-movie')">
-              <div class="action-icon">➕</div>
-              <h3>Tambah Film Baru</h3>
-              <p>Tambahkan film baru ke katalog</p>
-            </div>
-            <div class="quick-action-card" onclick="switchTab('manage-movies')">
-              <div class="action-icon">✏️</div>
-              <h3>Kelola Film</h3>
-              <p>Edit dan hapus film yang ada</p>
-            </div>
-            <div class="quick-action-card" onclick="exportData()">
-              <div class="action-icon">📊</div>
-              <h3>Export Data</h3>
-              <p>Download data film dalam format CSV</p>
-            </div>
-            <div class="quick-action-card" onclick="window.location.reload()">
-              <div class="action-icon">🔄</div>
-              <h3>Refresh Data</h3>
-              <p>Perbarui data terbaru</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- Recent Movies -->
-        <section class="recent-movies-section">
-          <div class="section-header">
-            <h2>🎬 Film Terbaru</h2>
-            <button class="view-all-btn" onclick="switchTab('manage-movies')">Lihat Semua →</button>
-          </div>
-          <div id="recent-movies-container" class="recent-movies-container">
-            <div class="loading-content">
-              <div class="loading-spinner"></div>
-              <p>Memuat film terbaru...</p>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <!-- Add Movie Tab -->
-      <div id="add-movie-tab" class="tab-content">
-        <section class="form-section">
-          <div class="section-header">
-            <h2>➕ Tambah Film Baru</h2>
-            <div class="form-help-text">
-              <span class="required-mark">*</span> Wajib diisi
-            </div>
-          </div>
-          
-          <form id="movie-form" class="movie-form">
-            <!-- Required Fields -->
-            <div class="required-fields">
-              <div class="form-group">
-                <label for="movie-title" class="required">
-                  <span class="label-icon">🎬</span>
-                  Judul Film *
-                </label>
-                <input type="text" id="movie-title" required placeholder="Masukkan judul film...">
-                <div class="form-help">Judul film akan ditampilkan di halaman utama</div>
-              </div>
-              
-              <div class="form-group">
-                <label for="movie-video-url" class="required">
-                  <span class="label-icon">🎥</span>
-                  URL Video *
-                </label>
-                <input type="url" id="movie-video-url" required placeholder="https://...">
-                <div class="form-help">Support: YouTube, Google Drive, Cloudflare R2, Vimeo, dll.</div>
-              </div>
-            </div>
-
-            <!-- Optional Fields -->
-            <div class="optional-section">
-              <h3 class="optional-title">
-                <span class="optional-icon">📋</span>
-                Informasi Tambahan (Opsional)
-              </h3>
-              
-              <div class="optional-grid">
-                <div class="form-group">
-                  <label for="movie-description">
-                    <span class="label-icon">📝</span>
-                    Deskripsi
-                  </label>
-                  <textarea id="movie-description" rows="3" placeholder="Masukkan deskripsi film (opsional)..."></textarea>
+                    <!-- Recent Movies -->
+                    <div class="recent-movies-section">
+                        <h3>🎬 Film Terbaru</h3>
+                        <div id="recent-movies-container" class="recent-movies-grid">
+                            <div class="loading">Memuat film terbaru...</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                  <label for="movie-category">
-                    <span class="label-icon">🏷️</span>
-                    Kategori
-                  </label>
-                  <select id="movie-category">
-                    <option value="">Pilih Kategori (opsional)</option>
-                    <option value="drakor">Drakor</option>
-                    <option value="dracin">Dracin</option>
-                    <option value="donghua">Donghua</option>
-                    <option value="lainnya">Lainnya</option>
-                  </select>
+                <!-- Add Movie Tab -->
+                <div id="add-movie-tab" class="tab-content">
+                    <div class="section-header">
+                        <h2>📤 Upload Film Baru</h2>
+                    </div>
+                    
+                    <div class="form-container">
+                        <form id="movie-form" class="movie-form">
+                            <div class="form-grid">
+                                <div class="form-column">
+                                    <div class="form-group">
+                                        <label for="movie-title">🎬 Judul Film *</label>
+                                        <input type="text" id="movie-title" name="title" required 
+                                               placeholder="Masukkan judul film">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="movie-video-url">🔗 URL Video *</label>
+                                        <div class="input-with-button">
+                                            <input type="url" id="movie-video-url" name="video_url" required 
+                                                   placeholder="https://example.com/video.mp4">
+                                            <button type="button" id="generate-thumbnail-btn" class="generate-thumbnail-btn">
+                                                🖼️ Pilih Thumbnail
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="movie-thumbnail-url">🖼️ URL Thumbnail</label>
+                                        <input type="url" id="movie-thumbnail-url" name="thumbnail_url" 
+                                               placeholder="Thumbnail akan digenerate otomatis" readonly>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="movie-aspect-ratio">📐 Aspect Ratio Thumbnail</label>
+                                        <select id="movie-aspect-ratio" name="aspect_ratio">
+                                            <option value="16:9">16:9 (Landscape)</option>
+                                            <option value="9:16">9:16 (Portrait)</option>
+                                            <option value="3:4">3:4 (Portrait)</option>
+                                            <option value="4:3">4:3 (Landscape)</option>
+                                        </select>
+                                        <small>Pilih ukuran thumbnail yang akan ditampilkan</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="movie-category">📂 Kategori</label>
+                                        <select id="movie-category" name="category">
+                                            <option value="colmek">Colmek</option>
+                                            <option value="berdua">Berdua</option>
+                                            <option value="bergilir">Bergilir</option>
+                                            <option value="lainnya" selected>Lainnya</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-column">
+                                    <div class="form-group">
+                                        <label for="movie-description">📝 Deskripsi</label>
+                                        <textarea id="movie-description" name="description" 
+                                                  placeholder="Deskripsi film (opsional)" rows="4"></textarea>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="movie-download-url">📥 URL Download (Opsional)</label>
+                                        <input type="url" id="movie-download-url" name="download_url" 
+                                               placeholder="https://example.com/download">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>👁️ Preview</label>
+                                        <div id="form-preview" class="form-preview">
+                                            <div class="preview-placeholder">
+                                                <span class="preview-icon">👆</span>
+                                                <p>Isi form untuk melihat preview</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="submit-btn">
+                                        <span class="btn-icon">💾</span> Simpan Film
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                  <label for="movie-download-url">
-                    <span class="label-icon">⬇️</span>
-                    URL Download
-                  </label>
-                  <input type="url" id="movie-download-url" placeholder="https://... (opsional)">
+                <!-- Manage Movies Tab -->
+                <div id="manage-movies-tab" class="tab-content">
+                    <div class="section-header">
+                        <h2>🎬 Kelola Film</h2>
+                        <div class="section-actions">
+                            <button id="export-btn" class="export-btn">
+                                <span class="btn-icon">📤</span> Export
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Bulk Actions -->
+                    <div id="bulk-actions" class="bulk-actions" style="display: none;">
+                        <div class="bulk-info">
+                            <span id="selected-count">0 film terpilih</span>
+                        </div>
+                        <div class="bulk-buttons">
+                            <button id="bulk-delete-btn" class="bulk-delete-btn">
+                                <span class="btn-icon">🗑️</span> Hapus
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filters and Search -->
+                    <div class="management-tools">
+                        <div class="search-box">
+                            <input type="text" id="admin-search" placeholder="Cari judul atau deskripsi...">
+                            <button id="admin-search-btn" class="search-btn">
+                                <span class="btn-icon">🔍</span>
+                            </button>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <select id="category-filter">
+                                <option value="all">Semua Kategori</option>
+                                <option value="colmek">Colmek</option>
+                                <option value="berdua">Berdua</option>
+                                <option value="bergilir">Bergilir</option>
+                                <option value="lainnya">Lainnya</option>
+                            </select>
+                        </div>
+
+                        <div class="count-display">
+                            <span id="display-count">0</span> dari <span id="total-count">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Movies Table -->
+                    <div class="movies-table-container">
+                        <table class="movies-table">
+                            <thead>
+                                <tr>
+                                    <th class="checkbox-cell">
+                                        <input type="checkbox" id="select-all" onchange="selectAllMovies(this.checked)">
+                                    </th>
+                                    <th class="thumbnail-cell">Thumbnail</th>
+                                    <th class="title-cell">Judul Film</th>
+                                    <th class="category-cell">Kategori</th>
+                                    <th class="aspect-ratio-cell">Aspect Ratio</th>
+                                    <th class="views-cell">Views</th>
+                                    <th class="date-cell">Tanggal</th>
+                                    <th class="actions-cell">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="movies-table-body">
+                                <tr>
+                                    <td colspan="8" class="loading">
+                                        <div class="loading-spinner"></div>
+                                        Memuat data film...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Table Summary -->
+                    <div class="table-summary">
+                        <div class="summary-item">
+                            <span class="summary-label">Total Film:</span>
+                            <span id="total-movies" class="summary-value">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Total Views:</span>
+                            <span id="total-views" class="summary-value">0</span>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="form-group">
-                  <label for="movie-thumbnail-url">
-                    <span class="label-icon">🖼️</span>
-                    URL Thumbnail Kustom
-                  </label>
-                  <input type="url" id="movie-thumbnail-url" placeholder="https://... (opsional)">
-                  <div class="form-help">Kosongkan untuk generate otomatis dari video</div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="form-actions">
-              <button type="button" class="cancel-btn" onclick="switchTab('dashboard')">
-                <span class="btn-icon">❌</span> Batal
-              </button>
-              <button type="submit" class="submit-btn">
-                <span class="btn-icon">💾</span> Simpan Film
-              </button>
-            </div>
-          </form>
-        </section>
-
-        <!-- Preview Section -->
-        <section class="preview-section">
-          <h3>👁️ Preview Film</h3>
-          <div id="form-preview" class="form-preview">
-            <div class="preview-placeholder">
-              <span class="preview-icon">👆</span>
-              <p>Isi form untuk melihat preview</p>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <!-- Manage Movies Tab -->
-      <div id="manage-movies-tab" class="tab-content">
-        <!-- Bulk Actions -->
-        <div id="bulk-actions" class="bulk-actions" style="display: none;">
-          <div class="bulk-actions-info">
-            <span class="selected-icon">✅</span>
-            <span id="selected-count">0 film terpilih</span>
-          </div>
-          <div class="bulk-actions-buttons">
-            <button id="bulk-delete-btn" class="bulk-delete-btn">
-              <span class="btn-icon">🗑️</span> Hapus Terpilih
-            </button>
-            <button class="bulk-cancel-btn" onclick="selectAllMovies(false)">
-              <span class="btn-icon">❌</span> Batal Pilih
-            </button>
-          </div>
+            </main>
         </div>
 
-        <section class="management-section">
-          <div class="section-header">
-            <h2>✏️ Kelola Film</h2>
-            <div class="management-actions">
-              <div class="search-box">
-                <input type="text" id="admin-search" placeholder="Cari film...">
-                <button id="admin-search-btn" class="search-btn">
-                  <span class="btn-icon">🔍</span>
-                </button>
-              </div>
-              <button id="export-btn" class="export-btn">
-                <span class="btn-icon">📊</span> Export Data
-              </button>
-            </div>
-          </div>
-
-          <!-- Table Controls -->
-          <div class="table-header">
-            <div class="table-actions">
-              <div class="bulk-select">
-                <input type="checkbox" id="select-all" onchange="selectAllMovies(this.checked)">
-                <label for="select-all">Pilih Semua</label>
-              </div>
-              <div class="table-filters">
-                <select id="category-filter" class="category-filter">
-                  <option value="all">Semua Kategori</option>
-                  <option value="drakor">Drakor</option>
-                  <option value="dracin">Dracin</option>
-                  <option value="donghua">Donghua</option>
-                  <option value="lainnya">Lainnya</option>
-                </select>
-                <span class="filter-info" id="filter-info">Total: <span id="total-count">0</span> film</span>
-              </div>
-            </div>
-            <div class="table-stats">
-              <span class="stats-item">
-                <span class="stats-icon">👁️</span>
-                Total Penonton: <span id="total-views">0</span>
-              </span>
-            </div>
-          </div>
-          
-          <!-- Movies Table -->
-          <div class="movies-table-container">
-            <table class="movies-table">
-              <thead>
-                <tr>
-                  <th class="checkbox-cell">
-                    <input type="checkbox" id="header-checkbox" onchange="selectAllMovies(this.checked)">
-                  </th>
-                  <th class="thumbnail-cell">Thumbnail</th>
-                  <th class="title-cell">Judul</th>
-                  <th class="category-cell">Kategori</th>
-                  <th class="views-cell">Penonton</th>
-                  <th class="date-cell">Tanggal</th>
-                  <th class="actions-cell">Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="movies-table-body">
-                <tr>
-                  <td colspan="7" class="loading">
-                    <div class="loading-content">
-                      <div class="loading-spinner"></div>
-                      <p>Memuat data film...</p>
+        <!-- Thumbnail Picker Modal -->
+        <div id="thumbnail-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🖼️ Pilih Thumbnail dari Video</h3>
+                    <button id="close-thumbnail-modal" class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="video-preview-section">
+                        <div id="thumbnail-video-container" class="video-container">
+                            <!-- Video element will be inserted here -->
+                        </div>
+                        <div class="video-controls">
+                            <div class="seek-control">
+                                <label>Geser untuk memilih frame:</label>
+                                <input type="range" id="thumbnail-seek-bar" class="seek-bar" 
+                                       min="0" max="100" value="10" step="1">
+                                <span id="current-time" class="time-display">00:00</span>
+                            </div>
+                            <div class="aspect-ratio-control">
+                                <label for="thumbnail-aspect-ratio">Pilih Rasio Thumbnail:</label>
+                                <select id="thumbnail-aspect-ratio">
+                                    <option value="16:9">16:9 (Landscape)</option>
+                                    <option value="9:16">9:16 (Portrait)</option>
+                                    <option value="3:4">3:4 (Portrait)</option>
+                                    <option value="4:3">4:3 (Landscape)</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Table Footer -->
-          <div class="table-footer">
-            <div class="table-pagination">
-              <button class="pagination-btn" disabled>
-                <span class="btn-icon">⬅️</span> Sebelumnya
-              </button>
-              <span class="pagination-info">Halaman 1 dari 1</span>
-              <button class="pagination-btn" disabled>
-                Selanjutnya <span class="btn-icon">➡️</span>
-              </button>
+                    <div class="thumbnail-preview-section">
+                        <h4>Preview Thumbnail</h4>
+                        <div id="thumbnail-preview" class="thumbnail-preview">
+                            <div class="preview-placeholder">
+                                <span class="preview-icon">🎬</span>
+                                <p>Geser seek bar untuk melihat preview</p>
+                            </div>
+                        </div>
+                        <div class="modal-actions">
+                            <button id="confirm-thumbnail" class="confirm-btn">
+                                ✅ Gunakan Thumbnail
+                            </button>
+                            <button id="cancel-thumbnail" class="cancel-btn">
+                                ❌ Batal
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="table-summary">
-              Menampilkan <span id="display-count">0</span> dari <span id="total-movies">0</span> film
-            </div>
-          </div>
-        </section>
-      </div>
+        </div>
     </div>
-  </main>
 
-  <!-- Footer -->
-  <footer class="admin-footer">
-    <div class="footer-container">
-      <div class="footer-info">
-        <span class="footer-icon">⚡</span>
-        <span>Admin Panel - DuniaFilm</span>
-      </div>
-      <div class="footer-actions">
-        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="footer-btn">
-          <span class="btn-icon">⬆️</span> Ke Atas
-        </button>
-      </div>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Memuat...</p>
     </div>
-  </footer>
 
-  <script type="module" src="admin.js"></script>
+    <script>
+        // Check if already logged in
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+            const loginScreen = document.getElementById('login-screen');
+            const adminPanel = document.getElementById('admin-panel');
+            
+            if (isLoggedIn) {
+                if (loginScreen) loginScreen.style.display = 'none';
+                if (adminPanel) adminPanel.style.display = 'block';
+            } else {
+                if (loginScreen) loginScreen.style.display = 'block';
+                if (adminPanel) adminPanel.style.display = 'none';
+            }
+        }
+
+        // Handle login form submission
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const submitBtn = this.querySelector('.login-btn');
+            
+            // Show loading
+            document.getElementById('loading-overlay').style.display = 'flex';
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="btn-icon">⏳</span> Memproses...';
+            
+            // Simulate login process
+            setTimeout(() => {
+                // Hardcoded credentials for demo
+                if (username === 'admin' && password === 'admin123') {
+                    localStorage.setItem('adminLoggedIn', 'true');
+                    checkLoginStatus();
+                } else {
+                    alert('Username atau password salah!');
+                }
+                
+                document.getElementById('loading-overlay').style.display = 'none';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span class="btn-icon">🔐</span> Login';
+            }, 1000);
+        });
+
+        // Logout function
+        function logout() {
+            if (confirm('Apakah Anda yakin ingin logout?')) {
+                localStorage.removeItem('adminLoggedIn');
+                checkLoginStatus();
+            }
+        }
+
+        // Check login status on page load
+        document.addEventListener('DOMContentLoaded', checkLoginStatus);
+    </script>
+    
+    <!-- Load admin.js sebagai module -->
+    <script type="module" src="admin.js"></script>
 </body>
 </html>

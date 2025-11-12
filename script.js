@@ -71,6 +71,7 @@ function setupEventListeners() {
 // Load movies dari Supabase
 async function loadMovies() {
     try {
+        showLoading();
         const { data: movies, error } = await supabase
             .from('movies')
             .select('*')
@@ -90,7 +91,24 @@ async function loadMovies() {
                 <p>Gagal memuat film. Silakan refresh halaman.</p>
             </div>
         `;
+    } finally {
+        hideLoading();
     }
+}
+
+// Show loading state
+function showLoading() {
+    elements.moviesGrid.innerHTML = `
+        <div class="loading-movies">
+            <div class="spinner"></div>
+            <p>Memuat film...</p>
+        </div>
+    `;
+}
+
+// Hide loading state
+function hideLoading() {
+    // Loading akan digantikan oleh displayMovies
 }
 
 // Handle search
@@ -217,7 +235,18 @@ function filterMovies() {
     displayMovies(filteredMovies);
 }
 
-// Display movies dengan thumbnail aspect ratio 9:16 dan info penonton
+// Get aspect ratio class
+function getAspectRatioClass(aspectRatio) {
+    const ratioMap = {
+        '16:9': 'aspect-16-9',
+        '9:16': 'aspect-9-16', 
+        '3:4': 'aspect-3-4',
+        '4:3': 'aspect-4-3'
+    };
+    return ratioMap[aspectRatio] || 'aspect-16-9';
+}
+
+// Display movies dengan aspect ratio dinamis
 function displayMovies(movies) {
     if (!movies || movies.length === 0) {
         elements.moviesGrid.innerHTML = `
@@ -234,14 +263,17 @@ function displayMovies(movies) {
         
         // Format jumlah penonton
         const views = movie.views || 0;
-        const viewsText = views >= 1000 ? `${(views / 1000).toFixed(1)}K` : views.toString();
+        const viewsText = formatViews(views);
         
         // Gunakan thumbnail_url dari database jika ada, atau generate otomatis
         const thumbnailUrl = movie.thumbnail_url || generateThumbnailUrl(movie.video_url, movie.title);
         
+        // Get aspect ratio class
+        const aspectRatioClass = getAspectRatioClass(movie.aspect_ratio || '16:9');
+        
         return `
         <div class="movie-card" data-id="${movie.id}">
-            <div class="movie-thumbnail-container">
+            <div class="movie-thumbnail-container ${aspectRatioClass}">
                 <img 
                     src="${thumbnailUrl}" 
                     alt="${movie.title}"
@@ -249,7 +281,7 @@ function displayMovies(movies) {
                     loading="lazy"
                     onerror="this.src='https://placehold.co/400x225/1a1a1a/ffffff?text=Thumbnail+Error'"
                 >
-                ${movie.category ? `<div class="category-badge category-${movie.category}">${movie.category.toUpperCase()}</div>` : ''}
+                ${movie.category ? `<div class="category-badge category-${movie.category}">${getCategoryDisplayName(movie.category)}</div>` : ''}
             </div>
             <div class="movie-info">
                 <h3 class="movie-title" title="${movie.title}">${title}</h3>
@@ -268,6 +300,17 @@ function displayMovies(movies) {
             window.location.href = `detail.html?id=${movieId}`;
         });
     });
+}
+
+// Get category display name
+function getCategoryDisplayName(category) {
+    const categoryMap = {
+        'colmek': 'COLMEX',
+        'berdua': 'BERDUA', 
+        'bergilir': 'BERGILIR',
+        'lainnya': 'LAINNYA'
+    };
+    return categoryMap[category] || category.toUpperCase();
 }
 
 // Format jumlah penonton

@@ -8,9 +8,22 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 // State
 let allMovies = [];
 let selectedMovies = new Set();
+let videoElement = null;
+let thumbnailCanvas = null;
+let currentVideoUrl = '';
 
 // Inisialisasi aplikasi
 document.addEventListener('DOMContentLoaded', async () => {
+  // Check login status - HANYA dijalankan jika admin panel ada
+  const adminPanel = document.getElementById('admin-panel');
+  if (!adminPanel) return;
+  
+  if (localStorage.getItem('adminLoggedIn') !== 'true') {
+    // Redirect ke halaman login jika belum login
+    window.location.href = 'admin.html';
+    return;
+  }
+
   await initializeApp();
   setupEventListeners();
 });
@@ -73,10 +86,56 @@ function setupEventListeners() {
   // Real-time form preview
   const titleInput = document.getElementById('movie-title');
   const videoUrlInput = document.getElementById('movie-video-url');
+  const aspectRatioInput = document.getElementById('movie-aspect-ratio');
   
-  if (titleInput && videoUrlInput) {
+  if (titleInput && videoUrlInput && aspectRatioInput) {
     titleInput.addEventListener('input', updateFormPreview);
     videoUrlInput.addEventListener('input', updateFormPreview);
+    aspectRatioInput.addEventListener('change', updateFormPreview);
+  }
+
+  // Thumbnail picker events
+  setupThumbnailPicker();
+}
+
+// Setup thumbnail picker functionality
+function setupThumbnailPicker() {
+  const generateThumbnailBtn = document.getElementById('generate-thumbnail-btn');
+  const thumbnailModal = document.getElementById('thumbnail-modal');
+  const closeModal = document.getElementById('close-thumbnail-modal');
+  const confirmThumbnail = document.getElementById('confirm-thumbnail');
+  const cancelThumbnail = document.getElementById('cancel-thumbnail');
+  const seekBar = document.getElementById('thumbnail-seek-bar');
+  const aspectRatioSelect = document.getElementById('thumbnail-aspect-ratio');
+  
+  if (generateThumbnailBtn) {
+    generateThumbnailBtn.addEventListener('click', openThumbnailPicker);
+  }
+  
+  if (closeModal) {
+    closeModal.addEventListener('click', () => {
+      thumbnailModal.style.display = 'none';
+      cleanupVideoElement();
+    });
+  }
+  
+  if (confirmThumbnail) {
+    confirmThumbnail.addEventListener('click', confirmSelectedThumbnail);
+  }
+  
+  if (cancelThumbnail) {
+    cancelThumbnail.addEventListener('click', () => {
+      thumbnailModal.style.display = 'none';
+      cleanupVideoElement();
+    });
+  }
+
+  if (seekBar) {
+    seekBar.addEventListener('input', updateThumbnailPreview);
+  }
+
+  if (aspectRatioSelect) {
+    aspectRatioSelect.addEventListener('change', updateThumbnailPreview);
   }
 }
 
@@ -98,6 +157,206 @@ function switchTab(tabName) {
   if (tabName === 'manage-movies') {
     loadMoviesTable();
   }
+}
+
+// Open thumbnail picker modal
+async function openThumbnailPicker() {
+  const videoUrl = document.getElementById('movie-video-url').value.trim();
+  const thumbnailModal = document.getElementById('thumbnail-modal');
+  const videoContainer = document.getElementById('thumbnail-video-container');
+  const seekBar = document.getElementById('thumbnail-seek-bar');
+  const currentTimeDisplay = document.getElementById('current-time');
+  const aspectRatioSelect = document.getElementById('thumbnail-aspect-ratio');
+  
+  if (!videoUrl) {
+    showNotification('Masukkan URL video terlebih dahulu', 'error');
+    return;
+  }
+
+  if (!isVideoUrlSupported(videoUrl)) {
+    showNotification('URL video tidak didukung untuk pemilihan thumbnail', 'error');
+    return;
+  }
+
+  showLoading();
+  
+  try {
+    // Setup video element
+    videoContainer.innerHTML = '';
+    videoElement = document.createElement('video');
+    videoElement.id = 'thumbnail-video';
+    videoElement.crossOrigin = 'anonymous';
+    videoElement.preload = 'metadata';
+    
+    // Setup canvas untuk thumbnail
+    thumbnailCanvas = document.createElement('canvas');
+    
+    videoElement.addEventListener('loadedmetadata', () => {
+      const duration = Math.floor(videoElement.duration);
+      seekBar.max = duration;
+      seekBar.value = Math.min(30, Math.floor(duration * 0.1)); // Default ke 10% atau 30 detik
+      updateThumbnailPreview();
+      hideLoading();
+    });
+    
+    videoElement.addEventListener('error', () => {
+      hideLoading();
+      showNotification('Gagal memuat video. Pastikan URL video valid dan dapat diakses.', 'error');
+    });
+    
+    videoElement.src = videoUrl;
+    currentVideoUrl = videoUrl;
+    videoContainer.appendChild(videoElement);
+    
+    // Set aspect ratio default dari form
+    const formAspectRatio = document.getElementById('movie-aspect-ratio').value;
+    if (aspectRatioSelect) {
+      aspectRatioSelect.value = formAspectRatio;
+    }
+    
+    // Show modal
+    thumbnailModal.style.display = 'block';
+    
+  } catch (error) {
+    console.error('Error opening thumbnail picker:', error);
+    hideLoading();
+    showNotification('Gagal membuka pemilih thumbnail', 'error');
+  }
+}
+
+// Update thumbnail preview based on seek bar position and aspect ratio
+function updateThumbnailPreview() {
+  const seekBar = document.getElementById('thumbnail-seek-bar');
+  const currentTimeDisplay = document.getElementById('current-time');
+  const thumbnailPreview = document.getElementById('thumbnail-preview');
+  const aspectRatioSelect = document.getElementById('thumbnail-aspect-ratio');
+  
+  if (!videoElement || !thumbnailCanvas || !seekBar) return;
+  
+  const time = parseInt(seekBar.value);
+  const duration = videoElement.duration;
+  const aspectRatio = aspectRatioSelect ? aspectRatioSelect.value : '16:9';
+  
+  // Update time display
+  if (currentTimeDisplay) {
+    currentTimeDisplay.textContent = formatTime(time) + ' / ' + formatTime(duration);
+  }
+  
+  // Set canvas size berdasarkan aspect ratio
+  const canvasSize = getCanvasSizeForAspectRatio(aspectRatio);
+  thumbnailCanvas.width = canvasSize.width;
+  thumbnailCanvas.height = canvasSize.height;
+  
+  // Capture frame
+  try {
+    videoElement.currentTime = time;
+    
+    videoElement.onseeked = () => {
+      const ctx = thumbnailCanvas.getContext('2d');
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, thumbnailCanvas.width, thumbnailCanvas.height);
+      
+      // Draw video frame ke canvas
+      ctx.drawImage(videoElement, 0, 0, thumbnailCanvas.width, thumbnailCanvas.height);
+      
+      // Convert canvas to data URL for preview
+      const thumbnailDataUrl = thumbnailCanvas.toDataURL('image/jpeg', 0.8);
+      
+      // Update preview dengan aspect ratio yang sesuai
+      const previewClass = getAspectRatioClass(aspectRatio);
+      thumbnailPreview.innerHTML = `
+        <div class="thumbnail-preview-container ${previewClass}">
+          <img src="${thumbnailDataUrl}" alt="Thumbnail Preview" style="width: 100%; height: 100%; object-fit: cover;">
+          <div class="thumbnail-time-overlay">
+            ${formatTime(time)}
+          </div>
+          <div class="thumbnail-aspect-info">
+            ${aspectRatio}
+          </div>
+        </div>
+      `;
+    };
+  } catch (error) {
+    console.error('Error capturing thumbnail:', error);
+  }
+}
+
+// Get canvas size berdasarkan aspect ratio
+function getCanvasSizeForAspectRatio(aspectRatio) {
+  const sizes = {
+    '16:9': { width: 400, height: 225 },
+    '9:16': { width: 225, height: 400 },
+    '3:4': { width: 300, height: 400 },
+    '4:3': { width: 400, height: 300 }
+  };
+  return sizes[aspectRatio] || sizes['16:9'];
+}
+
+// Confirm selected thumbnail
+function confirmSelectedThumbnail() {
+  const thumbnailModal = document.getElementById('thumbnail-modal');
+  const thumbnailUrlInput = document.getElementById('movie-thumbnail-url');
+  const aspectRatioSelect = document.getElementById('thumbnail-aspect-ratio');
+  
+  if (!thumbnailCanvas) return;
+  
+  try {
+    // Convert canvas to data URL
+    const thumbnailDataUrl = thumbnailCanvas.toDataURL('image/jpeg', 0.8);
+    
+    // Set thumbnail URL input
+    thumbnailUrlInput.value = thumbnailDataUrl;
+    
+    // Update aspect ratio di form utama jika berubah
+    if (aspectRatioSelect) {
+      const selectedAspectRatio = aspectRatioSelect.value;
+      document.getElementById('movie-aspect-ratio').value = selectedAspectRatio;
+    }
+    
+    // Update form preview
+    updateFormPreview();
+    
+    // Close modal
+    thumbnailModal.style.display = 'none';
+    cleanupVideoElement();
+    
+    showNotification('Thumbnail berhasil dipilih!', 'success');
+    
+  } catch (error) {
+    console.error('Error confirming thumbnail:', error);
+    showNotification('Gagal menyimpan thumbnail', 'error');
+  }
+}
+
+// Cleanup video element
+function cleanupVideoElement() {
+  if (videoElement) {
+    videoElement.pause();
+    videoElement.src = '';
+    videoElement = null;
+  }
+  thumbnailCanvas = null;
+  currentVideoUrl = '';
+}
+
+// Format time (seconds to MM:SS)
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Check if video URL is supported for thumbnail picking
+function isVideoUrlSupported(videoUrl) {
+  const supportedPatterns = [
+    /youtube\.com|youtu\.be/,
+    /drive\.google\.com/,
+    /\.(mp4|webm|ogg|mov|avi|wmv|flv|mkv)(\?.*)?$/i,
+    /r2\.dev|cloudflarestorage\.com/
+  ];
+  
+  return supportedPatterns.some(pattern => pattern.test(videoUrl));
 }
 
 // Load all movies
@@ -234,7 +493,7 @@ function displayStats(stats) {
           <div class="category-bar">
             <div class="category-bar-label">
               <span class="category-dot category-${category}"></span>
-              ${category.toUpperCase()}
+              ${getCategoryDisplayName(category)}
             </div>
             <div class="category-bar-count">${count}</div>
             <div class="category-bar-progress">
@@ -247,6 +506,17 @@ function displayStats(stats) {
     </div>
     ` : ''}
   `;
+}
+
+// Get category display name
+function getCategoryDisplayName(category) {
+  const categoryMap = {
+    'colmek': 'COLMEX',
+    'berdua': 'BERDUA',
+    'bergilir': 'BERGILIR', 
+    'lainnya': 'LAINNYA'
+  };
+  return categoryMap[category] || category.toUpperCase();
 }
 
 // Load recent movies
@@ -312,7 +582,7 @@ function displayRecentMovies(movies) {
   }).join('');
 }
 
-// Handle add movie (hanya judul dan URL video yang wajib)
+// Handle add movie
 async function handleAddMovie(e) {
   e.preventDefault();
   
@@ -338,6 +608,7 @@ async function handleAddMovie(e) {
       title: title,
       video_url: videoUrl,
       thumbnail_url: thumbnailUrl,
+      aspect_ratio: document.getElementById('movie-aspect-ratio').value || '16:9',
       description: document.getElementById('movie-description').value.trim() || null,
       category: document.getElementById('movie-category').value || 'lainnya',
       views: 0,
@@ -385,6 +656,7 @@ function updateFormPreview() {
   const title = document.getElementById('movie-title').value;
   const videoUrl = document.getElementById('movie-video-url').value;
   const customThumbnailUrl = document.getElementById('movie-thumbnail-url').value;
+  const aspectRatio = document.getElementById('movie-aspect-ratio').value;
   const preview = document.getElementById('form-preview');
 
   if (!title && !videoUrl) {
@@ -400,9 +672,12 @@ function updateFormPreview() {
   // Prioritize custom thumbnail URL, then generate from video
   const thumbnailUrl = customThumbnailUrl || generateThumbnailUrl(videoUrl, title);
   
+  // Calculate aspect ratio class
+  const aspectRatioClass = getAspectRatioClass(aspectRatio);
+  
   preview.innerHTML = `
     <div class="movie-preview">
-      <div class="preview-thumbnail">
+      <div class="preview-thumbnail ${aspectRatioClass}">
         <img src="${thumbnailUrl}" alt="Preview" onerror="this.src='https://placehold.co/400x225/1a1a1a/ffffff?text=Preview'">
       </div>
       <div class="preview-info">
@@ -410,11 +685,23 @@ function updateFormPreview() {
         <p class="preview-url">${videoUrl || 'URL Video'}</p>
         <div class="preview-meta">
           <span class="preview-views">▶ 0 penonton</span>
-          <span class="preview-category">${document.getElementById('movie-category').value || 'Kategori'}</span>
+          <span class="preview-category">${getCategoryDisplayName(document.getElementById('movie-category').value) || 'Kategori'}</span>
+          <span class="preview-aspect-ratio">${aspectRatio}</span>
         </div>
       </div>
     </div>
   `;
+}
+
+// Get aspect ratio class
+function getAspectRatioClass(aspectRatio) {
+  const ratioMap = {
+    '16:9': 'aspect-16-9',
+    '9:16': 'aspect-9-16',
+    '3:4': 'aspect-3-4',
+    '4:3': 'aspect-4-3'
+  };
+  return ratioMap[aspectRatio] || 'aspect-16-9';
 }
 
 // Load movies table for management tab
@@ -451,7 +738,7 @@ async function loadMoviesTable() {
     console.error('Error loading movies table:', error);
     tableBody.innerHTML = `
       <tr>
-        <td colspan="7" class="loading error">
+        <td colspan="8" class="loading error">
           <div class="error-message">
             <span class="error-icon">⚠️</span>
             Gagal memuat data film
@@ -483,7 +770,7 @@ function displayMoviesTable(movies) {
   if (!movies || movies.length === 0) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="7" class="loading">
+        <td colspan="8" class="loading">
           <div class="no-data">
             <span class="no-data-icon">📭</span>
             <p>Tidak ada film yang ditemukan</p>
@@ -498,6 +785,7 @@ function displayMoviesTable(movies) {
     const thumbnailUrl = movie.thumbnail_url || generateThumbnailUrl(movie.video_url, movie.title);
     const createdDate = new Date(movie.created_at).toLocaleDateString('id-ID');
     const isSelected = selectedMovies.has(movie.id);
+    const aspectRatioClass = getAspectRatioClass(movie.aspect_ratio || '16:9');
     
     return `
     <tr class="${isSelected ? 'selected' : ''}">
@@ -507,7 +795,7 @@ function displayMoviesTable(movies) {
       </td>
       <td class="thumbnail-cell">
         <img src="${thumbnailUrl}" alt="${movie.title}" 
-             class="table-thumbnail"
+             class="table-thumbnail ${aspectRatioClass}"
              onerror="this.src='https://placehold.co/60x40/1a1a1a/ffffff?text=No+Img'">
       </td>
       <td class="title-cell">
@@ -515,7 +803,10 @@ function displayMoviesTable(movies) {
         ${movie.description ? `<div class="movie-desc">${movie.description}</div>` : ''}
       </td>
       <td class="category-cell">
-        <span class="category-badge category-${movie.category}">${movie.category.toUpperCase()}</span>
+        <span class="category-badge category-${movie.category}">${getCategoryDisplayName(movie.category)}</span>
+      </td>
+      <td class="aspect-ratio-cell">
+        <span class="aspect-ratio-badge">${movie.aspect_ratio || '16:9'}</span>
       </td>
       <td class="views-cell">
         <div class="views-count">${formatViews(movie.views || 0)}</div>
@@ -530,9 +821,6 @@ function displayMoviesTable(movies) {
           </button>
           <button class="delete-btn" onclick="deleteMovie(${movie.id})" title="Hapus film">
             <span class="btn-icon">🗑️</span> Hapus
-          </button>
-          <button class="view-btn" onclick="viewMovie(${movie.id})" title="Lihat detail">
-            <span class="btn-icon">👁️</span> View
           </button>
         </div>
       </td>
@@ -661,6 +949,7 @@ window.editMovie = async function(movieId) {
     document.getElementById('movie-category').value = movie.category;
     document.getElementById('movie-download-url').value = movie.download_url || '';
     document.getElementById('movie-thumbnail-url').value = movie.thumbnail_url || '';
+    document.getElementById('movie-aspect-ratio').value = movie.aspect_ratio || '16:9';
     
     // Update form title and button
     document.querySelector('#add-movie-tab .section-header h2').textContent = '✏️ Edit Film';
@@ -670,7 +959,13 @@ window.editMovie = async function(movieId) {
     
     // Update form submission untuk edit mode
     const form = document.getElementById('movie-form');
-    form.onsubmit = async (e) => await handleEditMovie(e, movieId);
+    const originalHandler = form.onsubmit;
+    
+    form.onsubmit = async (e) => {
+      await handleEditMovie(e, movieId);
+      // Restore original handler after edit
+      form.onsubmit = originalHandler;
+    };
     
     // Update preview
     updateFormPreview();
@@ -705,6 +1000,7 @@ async function handleEditMovie(e, movieId) {
       title: title,
       video_url: videoUrl,
       thumbnail_url: thumbnailUrl,
+      aspect_ratio: document.getElementById('movie-aspect-ratio').value || '16:9',
       description: document.getElementById('movie-description').value.trim() || null,
       category: document.getElementById('movie-category').value || 'lainnya',
       download_url: document.getElementById('movie-download-url').value.trim() || null,
@@ -722,10 +1018,10 @@ async function handleEditMovie(e, movieId) {
     
     // Reset form dan kembali ke mode tambah
     document.getElementById('movie-form').reset();
-    document.querySelector('#add-movie-tab .section-header h2').textContent = '➕ Tambah Film Baru';
+    document.querySelector('#add-movie-tab .section-header h2').textContent = '📤 Upload Film Baru';
     const submitBtn = document.querySelector('#add-movie-tab .submit-btn');
     submitBtn.innerHTML = '<span class="btn-icon">💾</span> Simpan Film';
-    submitBtn.dataset.editId = '';
+    delete submitBtn.dataset.editId;
     
     // Kembalikan form submission ke mode tambah
     const form = document.getElementById('movie-form');
@@ -754,11 +1050,6 @@ async function handleEditMovie(e, movieId) {
     submitBtn.innerHTML = '<span class="btn-icon">💾</span> Update Film';
   }
 }
-
-// View movie details
-window.viewMovie = function(movieId) {
-  window.open(`detail.html?id=${movieId}`, '_blank');
-};
 
 // Delete movie
 window.deleteMovie = async function(movieId) {
@@ -817,11 +1108,12 @@ async function exportData() {
     if (error) throw error;
 
     // Convert to CSV
-    const headers = ['ID', 'Title', 'Category', 'Views', 'Video URL', 'Thumbnail URL', 'Download URL', 'Created At'];
+    const headers = ['ID', 'Title', 'Category', 'Aspect Ratio', 'Views', 'Video URL', 'Thumbnail URL', 'Download URL', 'Created At'];
     const csvData = movies.map(movie => [
       movie.id,
       `"${movie.title}"`,
       movie.category,
+      movie.aspect_ratio || '16:9',
       movie.views,
       movie.video_url,
       movie.thumbnail_url,
@@ -915,13 +1207,11 @@ function formatViews(views) {
   return views.toString();
 }
 
-// Generate thumbnail URL dengan support Cloudflare R2
+// Generate thumbnail URL
 function generateThumbnailUrl(videoUrl, movieTitle = "") {
   if (!videoUrl) return 'https://placehold.co/400x225/1a1a1a/ffffff?text=No+Video';
   
-  console.log('Generating thumbnail for URL:', videoUrl);
-  
-  // 1. YouTube thumbnail
+  // YouTube thumbnail
   if (videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be")) {
     let videoId;
     
@@ -934,13 +1224,11 @@ function generateThumbnailUrl(videoUrl, movieTitle = "") {
     }
     
     if (videoId && videoId.length === 11) {
-      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-      console.log('YouTube thumbnail generated:', thumbnailUrl);
-      return thumbnailUrl;
+      return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
     }
   }
   
-  // 2. Google Drive thumbnail
+  // Google Drive thumbnail
   if (videoUrl.includes("drive.google.com")) {
     let fileId;
     
@@ -952,58 +1240,45 @@ function generateThumbnailUrl(videoUrl, movieTitle = "") {
     }
     
     if (fileId) {
-      const thumbnailUrl = `https://lh3.googleusercontent.com/d/${fileId}=s400`;
-      console.log('Google Drive thumbnail generated:', thumbnailUrl);
-      return thumbnailUrl;
+      return `https://lh3.googleusercontent.com/d/${fileId}=s400`;
     }
   }
   
-  // 3. 🔥 CLOUDFLARE R2 - FULL SUPPORT
+  // Cloudflare R2
   if (videoUrl.includes("r2.dev") || videoUrl.includes("cloudflarestorage.com")) {
-    console.log('Cloudflare R2 URL detected');
+    const fileName = videoUrl.split('/').pop();
+    const baseName = fileName.split('.')[0];
     
-    // Extract file name from URL
-    const fileName = videoUrl.split('/').pop(); // "video.mp4"
-    const baseName = fileName.split('.')[0]; // "video"
-    
-    // Create a nice display name
     let displayName = baseName || 'Video';
     
-    // If movie title is provided, use it (truncate if too long)
     if (movieTitle && movieTitle.trim() !== '') {
       displayName = movieTitle.length > 20 ? movieTitle.substring(0, 20) + '...' : movieTitle;
     } else {
-      // Format the filename to be more readable
       displayName = baseName.replace(/[-_]/g, ' ');
       displayName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
       displayName = displayName.length > 20 ? displayName.substring(0, 20) + '...' : displayName;
     }
     
-    // Create thumbnail with file info and Cloudflare branding
-    const thumbnailUrl = `https://placehold.co/400x225/667eea/ffffff?text=${encodeURIComponent(displayName)}`;
-    console.log('Cloudflare R2 thumbnail generated:', thumbnailUrl);
-    return thumbnailUrl;
+    const colors = ['667eea', '764ba2', 'f093fb', '4facfe', '00f2fe'];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    
+    return `https://placehold.co/400x225/${randomColor}/ffffff?text=${encodeURIComponent(displayName)}+%0A%F0%9F%94%A5+Cloudflare+R2`;
   }
   
-  // 4. Vimeo thumbnail
+  // Vimeo thumbnail
   if (videoUrl.includes("vimeo.com")) {
     const videoId = videoUrl.split('vimeo.com/')[1]?.split('/')[0]?.split('?')[0];
     if (videoId && /^\d+$/.test(videoId)) {
-      const thumbnailUrl = `https://vumbnail.com/${videoId}.jpg`;
-      console.log('Vimeo thumbnail generated:', thumbnailUrl);
-      return thumbnailUrl;
+      return `https://vumbnail.com/${videoId}.jpg`;
     }
   }
   
-  // 5. Direct image URLs (jika videoUrl sebenarnya adalah gambar)
+  // Direct image URLs
   if (videoUrl.match(/\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i)) {
-    console.log('Direct image URL detected:', videoUrl);
     return videoUrl;
   }
   
-  // 6. Default placeholder dengan judul film
+  // Default placeholder
   const shortTitle = movieTitle.length > 20 ? movieTitle.substring(0, 20) + '...' : movieTitle;
-  const placeholderUrl = `https://placehold.co/400x225/667eea/ffffff?text=${encodeURIComponent(shortTitle || 'Video')}`;
-  console.log('Default placeholder generated:', placeholderUrl);
-  return placeholderUrl;
+  return `https://placehold.co/400x225/667eea/ffffff?text=${encodeURIComponent(shortTitle || 'Video')}`;
 }

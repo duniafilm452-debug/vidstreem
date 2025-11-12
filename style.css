@@ -1,3 +1,99 @@
+/* Dark/Light Mode Variables */
+:root {
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --text-muted: #888888;
+  --accent-color: #ff0000;
+  --card-bg: #272727;
+  --border-color: #333333;
+}
+
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --text-primary: #000000;
+  --text-secondary: #333333;
+  --text-muted: #666666;
+  --accent-color: #ff0000;
+  --card-bg: #f0f0f0;
+  --border-color: #dddddd;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--card-bg);
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+}
+
+/* Update existing styles to use CSS variables */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.search-box {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.search-box::placeholder {
+  color: var(--text-muted);
+}
+
+.category-btn {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.category-btn.active {
+  background: var(--accent-color);
+  color: white;
+}
+
+.movie-card {
+  background: transparent;
+}
+
+.movie-title {
+  color: var(--text-primary);
+}
+
+.movie-views {
+  color: var(--text-muted);
+}
+
+.loading-movies, .no-movies {
+  color: var(--text-muted);
+}
 /* Reset dan Base Styles */
 * {
   margin: 0;
@@ -10,7 +106,6 @@ body {
   background-color: #0f0f0f;
   color: #ffffff;
   line-height: 1.6;
-  /* Padding bottom dihapus karena tidak ada bottom nav */
 }
 
 /* Header */
@@ -151,11 +246,11 @@ body {
   padding: 20px 15px;
 }
 
-/* Movies Grid - 3 Columns dengan Aspect Ratio 3:4 */
+/* PINTEREST STYLE MASONRY LAYOUT - FIXED */
 .movies-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  /* GANTI: Gunakan columns bukan grid */
+  column-count: 4;
+  column-gap: 12px;
 }
 
 .movie-card {
@@ -165,6 +260,11 @@ body {
   opacity: 0;
   transform: translateY(20px);
   animation: fadeInUp 0.6s ease-out forwards;
+  /* PENTING: Untuk masonry layout */
+  break-inside: avoid;
+  margin-bottom: 12px;
+  display: inline-block;
+  width: 100%;
 }
 
 .movie-card:hover {
@@ -208,19 +308,32 @@ body {
 .movie-card:nth-child(11) { animation-delay: 0.6s; }
 .movie-card:nth-child(12) { animation-delay: 0.65s; }
 
-/* Thumbnail dengan Aspect Ratio 3:4 dan Sudut Tumpul */
+/* Thumbnail Container dengan Aspect Ratio Dinamis */
 .movie-thumbnail-container {
   position: relative;
   width: 100%;
-  padding-bottom: 133.33%;
   overflow: hidden;
   border-radius: 12px;
 }
 
+/* Aspect Ratio Classes - Biarkan natural untuk masonry */
+.movie-thumbnail-container.aspect-16-9 {
+  aspect-ratio: 16 / 9;
+}
+
+.movie-thumbnail-container.aspect-9-16 {
+  aspect-ratio: 9 / 16;
+}
+
+.movie-thumbnail-container.aspect-3-4 {
+  aspect-ratio: 3 / 4;
+}
+
+.movie-thumbnail-container.aspect-4-3 {
+  aspect-ratio: 4 / 3;
+}
+
 .movie-thumbnail {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -233,21 +346,26 @@ body {
   transform: scale(1.05);
 }
 
+/* Info section */
 .movie-info {
-  padding: 8px 4px 4px 4px;
+  padding: 10px 4px 4px 4px;
+  min-height: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .movie-title {
   font-size: 0.8rem;
   font-weight: 500;
   color: #ffffff;
-  line-height: 1;
+  line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  height: 2.9em;
   text-align: center;
+  margin: 0;
 }
 
 .movie-meta {
@@ -288,16 +406,16 @@ body {
 }
 
 /* Warna khusus untuk setiap kategori */
-.category-drakor { 
-  background: rgba(25, 118, 210, 0.9); 
+.category-colmek { 
+  background: rgba(239, 68, 68, 0.9); 
   color: white; 
 }
-.category-dracin { 
-  background: rgba(123, 31, 162, 0.9); 
+.category-berdua { 
+  background: rgba(16, 185, 129, 0.9); 
   color: white; 
 }
-.category-donghua { 
-  background: rgba(56, 142, 60, 0.9); 
+.category-bergilir { 
+  background: rgba(139, 92, 246, 0.9); 
   color: white; 
 }
 .category-lainnya { 
@@ -307,7 +425,7 @@ body {
 
 /* Loading States */
 .loading-movies {
-  grid-column: 1 / -1;
+  column-span: all;
   text-align: center;
   padding: 60px 20px;
   color: #666;
@@ -329,7 +447,7 @@ body {
 }
 
 .no-movies {
-  grid-column: 1 / -1;
+  column-span: all;
   text-align: center;
   padding: 60px 20px;
   color: #666;
@@ -338,10 +456,16 @@ body {
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+  .movies-grid {
+    column-count: 3;
+  }
+}
+
 @media (max-width: 768px) {
   .movies-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    column-count: 2;
+    column-gap: 10px;
   }
   
   .header-container {
@@ -373,7 +497,8 @@ body {
   }
   
   .movie-info {
-    padding: 6px 2px 2px 2px;
+    padding: 8px 2px 2px 2px;
+    min-height: 45px;
   }
   
   .movie-title {
@@ -388,8 +513,8 @@ body {
 
 @media (max-width: 480px) {
   .movies-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
+    column-count: 2;
+    column-gap: 8px;
   }
   
   .search-box {
@@ -423,9 +548,12 @@ body {
     border-radius: 8px;
   }
   
+  .movie-info {
+    min-height: 40px;
+  }
+  
   .movie-title {
     font-size: 0.7rem;
-    height: 2.2em;
   }
   
   .movie-meta {
@@ -440,8 +568,8 @@ body {
 
 @media (max-width: 360px) {
   .movies-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    column-count: 2;
+    column-gap: 6px;
   }
   
   .search-box {

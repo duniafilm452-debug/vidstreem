@@ -82,12 +82,12 @@ async function loadMovieDetail(movieId) {
     }
 }
 
-// Display movie detail
+// Display movie detail - DIPERBAIKI
 function displayMovieDetail(movie) {
     elements.videoPlayer.src = movie.video_url;
     elements.videoTitle.textContent = movie.title;
     elements.videoViews.textContent = `▶ ${formatViews(movie.views || 0)} penonton`;
-    elements.videoCategory.textContent = movie.category?.toUpperCase() || 'LAINNYA';
+    elements.videoCategory.textContent = getCategoryDisplayName(movie.category) || 'LAINNYA';
     elements.videoDescription.textContent = movie.description || 'Tidak ada deskripsi.';
     
     // Set category class untuk badge
@@ -95,6 +95,17 @@ function displayMovieDetail(movie) {
     if (movie.category) {
         elements.videoCategory.classList.add(`category-${movie.category}`);
     }
+}
+
+// Get category display name
+function getCategoryDisplayName(category) {
+    const categoryMap = {
+        'colmek': 'COLMEX',
+        'berdua': 'BERDUA',
+        'bergilir': 'BERGILIR',
+        'lainnya': 'LAINNYA'
+    };
+    return categoryMap[category] || category.toUpperCase();
 }
 
 // Load related movies (maksimal 20 video)
@@ -182,7 +193,18 @@ function generateThumbnailUrl(videoUrl, movieTitle = "") {
     return `https://placehold.co/400x225/667eea/ffffff?text=${encodeURIComponent(shortTitle || 'Video')}`;
 }
 
-// Display related movies
+// Get aspect ratio class - FUNGSI BARU untuk halaman detail
+function getAspectRatioClass(aspectRatio) {
+    const ratioMap = {
+        '16:9': 'aspect-16-9',
+        '9:16': 'aspect-9-16', 
+        '3:4': 'aspect-3-4',
+        '4:3': 'aspect-4-3'
+    };
+    return ratioMap[aspectRatio] || 'aspect-16-9';
+}
+
+// Display related movies - DIPERBAIKI dengan aspect ratio
 function displayRelatedMovies(movies) {
     if (!movies || movies.length === 0) {
         elements.relatedGrid.innerHTML = `
@@ -197,12 +219,16 @@ function displayRelatedMovies(movies) {
         const title = movie.title.length > 35 ? movie.title.substring(0, 35) + '...' : movie.title;
         const views = movie.views || 0;
         const viewsText = formatViews(views);
+        
         // Gunakan thumbnail_url dari database jika ada, atau generate otomatis
         const thumbnailUrl = movie.thumbnail_url || generateThumbnailUrl(movie.video_url, movie.title);
         
+        // Get aspect ratio class dari data movie
+        const aspectRatioClass = getAspectRatioClass(movie.aspect_ratio || '16:9');
+        
         return `
         <div class="movie-card" data-id="${movie.id}">
-            <div class="movie-thumbnail-container">
+            <div class="movie-thumbnail-container ${aspectRatioClass}">
                 <img 
                     src="${thumbnailUrl}" 
                     alt="${movie.title}"
@@ -210,7 +236,7 @@ function displayRelatedMovies(movies) {
                     loading="lazy"
                     onerror="this.src='https://placehold.co/400x225/1a1a1a/ffffff?text=Thumbnail+Error'"
                 >
-                ${movie.category ? `<div class="category-badge category-${movie.category}">${movie.category.toUpperCase()}</div>` : ''}
+                ${movie.category ? `<div class="category-badge category-${movie.category}">${getCategoryDisplayName(movie.category)}</div>` : ''}
             </div>
             <div class="movie-info">
                 <h3 class="movie-title" title="${movie.title}">${title}</h3>
