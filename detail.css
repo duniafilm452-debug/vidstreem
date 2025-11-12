@@ -1,100 +1,3 @@
-/* Dark/Light Mode Variables */
-:root {
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
-  --text-primary: #ffffff;
-  --text-secondary: #cccccc;
-  --text-muted: #888888;
-  --accent-color: #ff0000;
-  --card-bg: #272727;
-  --border-color: #333333;
-}
-
-[data-theme="light"] {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f5f5f5;
-  --text-primary: #000000;
-  --text-secondary: #333333;
-  --text-muted: #666666;
-  --accent-color: #ff0000;
-  --card-bg: #f0f0f0;
-  --border-color: #dddddd;
-}
-
-/* Theme Toggle Button */
-.theme-toggle {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: var(--card-bg);
-  border: none;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: var(--text-primary);
-  z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  transition: all 0.3s ease;
-}
-
-.theme-toggle:hover {
-  transform: scale(1.1);
-}
-
-/* Update existing styles to use CSS variables */
-body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.back-btn {
-  background: var(--card-bg);
-  color: var(--text-primary);
-}
-
-.back-btn:hover {
-  background: var(--border-color);
-}
-
-.video-title {
-  color: var(--text-primary);
-}
-
-.video-meta {
-  color: var(--text-muted);
-}
-
-.video-description {
-  color: var(--text-secondary);
-}
-
-.share-btn {
-  background: var(--card-bg);
-  color: var(--text-primary);
-}
-
-.section-title {
-  color: var(--text-primary);
-  border-bottom: 2px solid var(--border-color);
-}
-
-.movie-title {
-  color: var(--text-primary);
-}
-
-.movie-meta {
-  color: var(--text-muted);
-}
-
-.loading-movies, .no-movies {
-  color: var(--text-muted);
-}
 /* Detail Page Styles */
 .detail-container {
   max-width: 1200px;
@@ -233,29 +136,29 @@ body {
   padding-bottom: 10px;
 }
 
-/* MASONRY STYLE GRID untuk Related Videos - DIKEMBANGKAN */
+/* MASONRY LAYOUT untuk Related Videos - FIXED */
 .movies-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
-  align-items: start;
+  /* GANTI: Gunakan columns bukan grid */
+  column-count: 4;
+  column-gap: 12px;
 }
 
 .movie-card {
   background: transparent;
   transition: all 0.3s ease;
   cursor: pointer;
-  /* Masonry: Biarkan tinggi natural */
-  display: flex;
-  flex-direction: column;
-  height: fit-content;
+  /* PENTING: Untuk masonry layout */
+  break-inside: avoid;
+  margin-bottom: 12px;
+  display: inline-block;
+  width: 100%;
 }
 
 .movie-card:hover {
   transform: translateY(-5px);
 }
 
-/* Aspect Ratio untuk Related Videos - MASONRY STYLE */
+/* Aspect Ratio untuk Related Videos */
 .movie-thumbnail-container {
   position: relative;
   width: 100%;
@@ -295,14 +198,13 @@ body {
   transform: scale(1.05);
 }
 
-/* Info section dengan tinggi konsisten - DIKEMBANGKAN */
+/* Info section */
 .movie-info {
   padding: 10px 4px 4px 4px;
   min-height: 45px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  flex-grow: 1;
 }
 
 .movie-title {
@@ -368,7 +270,7 @@ body {
 
 /* Loading States */
 .loading-movies {
-  grid-column: 1 / -1;
+  column-span: all;
   text-align: center;
   padding: 60px 20px;
   color: #666;
@@ -385,7 +287,7 @@ body {
 }
 
 .no-movies {
-  grid-column: 1 / -1;
+  column-span: all;
   text-align: center;
   padding: 60px 20px;
   color: #666;
@@ -395,8 +297,7 @@ body {
 /* Responsive Design untuk Detail Page */
 @media (max-width: 1024px) {
   .movies-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 10px;
+    column-count: 3;
   }
 }
 
@@ -419,20 +320,13 @@ body {
   }
   
   .movies-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 8px;
+    column-count: 2;
+    column-gap: 10px;
   }
   
   .movie-info {
     min-height: 40px;
     padding: 8px 2px 2px 2px;
-  }
-}
-
-@media (max-width: 640px) {
-  .movies-grid {
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 8px;
   }
 }
 
@@ -456,27 +350,15 @@ body {
   }
   
   .movies-grid {
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 6px;
+    column-count: 2;
+    column-gap: 8px;
   }
   
   .movie-info {
     min-height: 35px;
-    padding: 6px 2px 2px 2px;
   }
   
   .movie-title {
     font-size: 0.75rem;
-  }
-  
-  .movie-meta {
-    font-size: 0.65rem;
-  }
-}
-
-@media (max-width: 360px) {
-  .movies-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 5px;
   }
 }
