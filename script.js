@@ -305,7 +305,7 @@ function displayMovies(movies) {
 // Get category display name
 function getCategoryDisplayName(category) {
     const categoryMap = {
-        'colmek': 'COLMEX',
+        'colmek': 'COLMEK',
         'berdua': 'BERDUA', 
         'bergilir': 'BERGILIR',
         'lainnya': 'LAINNYA'
