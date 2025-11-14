@@ -108,21 +108,24 @@ function getCategoryDisplayName(category) {
     return categoryMap[category] || category.toUpperCase();
 }
 
-// Load related movies (maksimal 20 video)
+// Load related movies (maksimal 20 video) - DIPERBAIKI: MENAMPILKAN VIDEO SECARA ACAK
 async function loadRelatedMovies() {
     try {
         const { data: movies, error } = await supabase
             .from('movies')
             .select('*')
             .neq('id', currentMovie.id)
-            .order('created_at', { ascending: false })
-            .limit(20);
+            .limit(50); // Ambil lebih banyak data untuk diacak
 
         if (error) {
             throw error;
         }
 
-        relatedMovies = movies || [];
+        // Acak urutan video
+        const shuffledMovies = shuffleArray(movies || []);
+        
+        // Ambil maksimal 20 video
+        relatedMovies = shuffledMovies.slice(0, 20);
         displayRelatedMovies(relatedMovies);
 
     } catch (error) {
@@ -133,6 +136,16 @@ async function loadRelatedMovies() {
             </div>
         `;
     }
+}
+
+// Fungsi untuk mengacak array
+function shuffleArray(array) {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
 }
 
 // Generate thumbnail URL dengan support Cloudflare R2
