@@ -41,15 +41,8 @@
         <script type="text/javascript" src="//www.highperformanceformat.com/817fc1b491510c6a8e09a78db3eb483e/invoke.js"></script>
       </div>
 
-      <!-- Video & Pre-roll container -->
-      <div class="video-container" style="position: relative;">
-        <!-- Pre-roll ad overlay -->
-        <div id="preroll-ad-container" style="position: absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:10; display:none;">
-          <video id="preroll-video" width="100%" height="100%" autoplay muted></video>
-          <button id="skip-preroll-btn" style="position:absolute; top:10px; right:10px; z-index:20; padding:5px 10px; background:#fff; border:none; cursor:pointer; display:none;">Lewati Iklan</button>
-        </div>
-
-        <!-- Main video -->
+      <!-- Video -->
+      <div class="video-container">
         <video id="video-player" class="video-player" controls></video>
       </div>
 
@@ -119,57 +112,6 @@
   document.addEventListener("click", function popAdOnce() {
       window.open("//pl28053454.effectivegatecpm.com/a9/88/3f/a9883f0a4a1e79d5a54609491435ce4a.js", "_blank");
       document.removeEventListener("click", popAdOnce);
-  });
-  </script>
-
-  <!-- Script Pre-roll & Post-roll Ads dengan skip acak 5-30 detik -->
-  <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const mainVideo = document.getElementById('video-player');
-    const prerollContainer = document.getElementById('preroll-ad-container');
-    const prerollVideo = document.getElementById('preroll-video');
-    const skipBtn = document.getElementById('skip-preroll-btn');
-
-    // Link pre-roll dan post-roll (ganti sesuai provider)
-    const prerollSrc = 'https://homely-pass.com/d.m/F_zKd/GeNTvbZ/GaUv/BeIm/9guAZoUhlzkhPUTfYt3/M/DRMc4oM/DDYgt/NmjScgwnM/zBgawuNuwk';
-    const postrollSrc = 'https://homely-pass.com/d.m/POSTROLL_LINK_CONTOH';
-
-    // Acak durasi skip (5-30 detik)
-    const skipTime = Math.floor(Math.random() * 26) + 5;
-
-    // Pre-roll
-    mainVideo.pause();
-    prerollVideo.src = prerollSrc;
-    prerollContainer.style.display = 'block';
-
-    prerollVideo.addEventListener('timeupdate', () => {
-      if (prerollVideo.currentTime >= skipTime) {
-        skipBtn.style.display = 'block';
-      }
-    });
-
-    skipBtn.addEventListener('click', () => {
-      prerollContainer.style.display = 'none';
-      mainVideo.play();
-    });
-
-    prerollVideo.addEventListener('ended', () => {
-      prerollContainer.style.display = 'none';
-      mainVideo.play();
-    });
-
-    // Post-roll
-    mainVideo.addEventListener('ended', () => {
-      if (mainVideo.duration >= 300) { // minimal 5 menit
-        prerollVideo.src = postrollSrc;
-        prerollContainer.style.display = 'block';
-        skipBtn.style.display = 'none';
-        prerollVideo.play();
-        prerollVideo.addEventListener('ended', () => {
-          prerollContainer.style.display = 'none';
-        }, { once: true });
-      }
-    });
   });
   </script>
 
