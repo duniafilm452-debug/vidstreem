@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="detail.css" />
 </head>
 <body>
+
   <!-- Header -->
   <header class="main-header">
     <div class="header-container">
@@ -17,55 +18,102 @@
     </div>
   </header>
 
-  <!-- Main Content -->
+  <!-- Main -->
   <main class="main-content">
     <div class="detail-container">
+
       <!-- Tombol Kembali -->
       <button class="back-btn" onclick="window.location.href='index.html'">
-        <span>←</span> Kembali
+        ← Kembali
       </button>
 
-      <!-- Video Player -->
-      <div class="video-container">
-        <video id="video-player" class="video-player" controls>
-          Your browser does not support the video tag.
-        </video>
+      <!-- Banner 1 -->
+      <div class="ad-banner">
+        <script type="text/javascript">
+          atOptions = {
+            'key' : '817fc1b491510c6a8e09a78db3eb483e',
+            'format' : 'iframe',
+            'height' : 50,
+            'width' : 320,
+            'params' : {}
+          };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/817fc1b491510c6a8e09a78db3eb483e/invoke.js"></script>
       </div>
 
-      <!-- Video Info -->
+      <!-- Video -->
+      <div class="video-container">
+        <video id="video-player" class="video-player" controls></video>
+      </div>
+
+      <!-- Banner 2 -->
+      <div class="ad-banner">
+        <script type="text/javascript">
+          atOptions = {
+            'key' : '817fc1b491510c6a8e09a78db3eb483e',
+            'format' : 'iframe',
+            'height' : 50,
+            'width' : 320,
+            'params' : {}
+          };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/817fc1b491510c6a8e09a78db3eb483e/invoke.js"></script>
+      </div>
+
+      <!-- Info Video -->
       <div class="video-info">
         <h1 id="video-title" class="video-title">Judul Film</h1>
         <div class="video-meta">
-          <span id="video-views" class="video-views">▶ 0 penonton</span>
-          <span id="video-category" class="video-category">Kategori</span>
+          <span id="video-views">▶ 0 penonton</span>
+          <span id="video-category">Kategori</span>
         </div>
-        <p id="video-description" class="video-description">Deskripsi film akan muncul di sini.</p>
+        <p id="video-description"></p>
       </div>
 
-      <!-- Action Buttons -->
-      <div class="action-buttons">
-        <button id="share-btn" class="action-btn share-btn">
-          <span class="btn-icon">📤</span>
-          <span class="btn-text">Share</span>
-        </button>
-        <button id="download-btn" class="action-btn download-btn">
-          <span class="btn-icon">⬇️</span>
-          <span class="btn-text">Download</span>
-        </button>
+      <!-- Banner 3 -->
+      <div class="ad-banner">
+        <script type="text/javascript">
+          atOptions = {
+            'key' : '817fc1b491510c6a8e09a78db3eb483e',
+            'format' : 'iframe',
+            'height' : 50,
+            'width' : 320,
+            'params' : {}
+          };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/817fc1b491510c6a8e09a78db3eb483e/invoke.js"></script>
       </div>
 
-      <!-- Video Lainnya -->
+      <!-- Related Videos -->
       <section class="related-videos">
         <h2 class="section-title">Video Lainnya</h2>
-        <div id="related-grid" class="movies-grid">
-          <div class="loading-movies">
-            <div class="spinner"></div>
-            <p>Memuat video...</p>
-          </div>
-        </div>
+        <div id="related-grid" class="movies-grid"></div>
       </section>
+
+      <!-- Banner 4 -->
+      <div class="ad-banner">
+        <script type="text/javascript">
+          atOptions = {
+            'key' : '817fc1b491510c6a8e09a78db3eb483e',
+            'format' : 'iframe',
+            'height' : 50,
+            'width' : 320,
+            'params' : {}
+          };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/817fc1b491510c6a8e09a78db3eb483e/invoke.js"></script>
+      </div>
+
     </div>
   </main>
+
+  <!-- POPUNDER -->
+  <script>
+  document.addEventListener("click", function popAdOnce() {
+      window.open("//pl28053454.effectivegatecpm.com/a9/88/3f/a9883f0a4a1e79d5a54609491435ce4a.js", "_blank");
+      document.removeEventListener("click", popAdOnce);
+  });
+  </script>
 
   <script type="module" src="detail.js"></script>
 </body>

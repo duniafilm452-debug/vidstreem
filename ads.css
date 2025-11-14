@@ -1,0 +1,193 @@
+/* CSS Variables untuk Iklan */
+:root {
+    --ad-bg-primary: #1a1a1a;
+    --ad-bg-secondary: #2d2d2d;
+    --ad-border-color: #404040;
+    --ad-text-primary: #ffffff;
+    --ad-text-secondary: #cccccc;
+    --ad-success: #10b981;
+    --ad-warning: #f59e0b;
+    --ad-error: #ef4444;
+    --ad-info: #3b82f6;
+}
+
+/* Styles untuk Iklan di Frontend */
+.ad-container {
+    margin: 15px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--ad-bg-primary);
+    border: 1px solid var(--ad-border-color);
+}
+
+.ad-label {
+    font-size: 0.7rem;
+    color: var(--ad-text-secondary);
+    text-align: center;
+    padding: 4px;
+    background: var(--ad-bg-secondary);
+    text-transform: uppercase;
+}
+
+.ad-banner {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+}
+
+.ad-banner-728x90 {
+    width: 728px;
+    height: 90px;
+    margin: 0 auto;
+}
+
+.ad-banner-468x60 {
+    width: 468px;
+    height: 60px;
+    margin: 0 auto;
+}
+
+.ad-banner-300x250 {
+    width: 300px;
+    height: 250px;
+    margin: 0 auto;
+}
+
+.ad-banner-300x600 {
+    width: 300px;
+    height: 600px;
+    margin: 0 auto;
+}
+
+.ad-popup {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ad-popup-content {
+    background: var(--ad-bg-primary);
+    padding: 20px;
+    border-radius: 12px;
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+.ad-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--ad-error);
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ad-interstitial {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--ad-bg-primary);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.ad-countdown {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--ad-warning);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+/* Responsive Ads */
+@media (max-width: 768px) {
+    .ad-banner-728x90,
+    .ad-banner-468x60 {
+        width: 100%;
+        height: auto;
+        max-width: 320px;
+    }
+    
+    .ad-banner-300x600 {
+        width: 100%;
+        height: auto;
+        max-width: 300px;
+    }
+}
+
+/* Admin Ads Styles */
+.ads-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.ad-stat-card {
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.ad-stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 8px;
+}
+
+.ad-stat-label {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.ad-platform-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.platform-adsterra { background: #ff6b35; color: white; }
+.platform-rollerads { background: #4ecdc4; color: white; }
+.platform-google_adsense { background: #4285f4; color: white; }
+.platform-custom { background: #666; color: white; }
+
+.ad-type-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.type-banner { background: var(--info-color); color: white; }
+.type-popup { background: var(--warning-color); color: white; }
+.type-interstitial { background: var(--error-color); color: white; }
+.type-native { background: var(--success-color); color: white; }
+.type-video { background: #8b5cf6; color: white; }
+
+.status-active { color: var(--success-color); }
+.status-inactive { color: var(--error-color); }

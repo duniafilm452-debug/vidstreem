@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Iklan - DuniaFilm</title>
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="ads.css">
+</head>
+<body>
+    <!-- Admin Panel -->
+    <div id="admin-panel" class="admin-panel">
+        <div class="admin-container">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="header-content">
+                    <h1>🎬 DuniaFilm</h1>
+                    <div class="header-info">
+                        <span id="update-time"></span>
+                        <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Navigation Tabs -->
+            <nav class="admin-tabs">
+                <button class="tab-btn" data-tab="dashboard">📊 Dashboard</button>
+                <button class="tab-btn" data-tab="add-movie">📤 Upload Film</button>
+                <button class="tab-btn" data-tab="manage-movies">🎬 Kelola Film</button>
+                <button class="tab-btn active" data-tab="manage-ads">💰 Kelola Iklan</button>
+            </nav>
+
+            <!-- Manage Ads Tab -->
+            <div id="manage-ads-tab" class="tab-content active">
+                <div class="section-header">
+                    <h2>💰 Kelola Iklan</h2>
+                    <div class="section-actions">
+                        <button id="add-ad-btn" class="export-btn">
+                            <span class="btn-icon">➕</span> Tambah Iklan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ads Statistics -->
+                <div class="ads-stats-grid">
+                    <div class="ad-stat-card">
+                        <div class="ad-stat-value" id="total-ads">0</div>
+                        <div class="ad-stat-label">Total Iklan</div>
+                    </div>
+                    <div class="ad-stat-card">
+                        <div class="ad-stat-value" id="active-ads">0</div>
+                        <div class="ad-stat-label">Iklan Aktif</div>
+                    </div>
+                    <div class="ad-stat-card">
+                        <div class="ad-stat-value" id="total-impressions">0</div>
+                        <div class="ad-stat-label">Total Impresi</div>
+                    </div>
+                    <div class="ad-stat-card">
+                        <div class="ad-stat-value" id="total-clicks">0</div>
+                        <div class="ad-stat-label">Total Klik</div>
+                    </div>
+                </div>
+
+                <!-- Ads Table -->
+                <div class="management-tools">
+                    <div class="search-box">
+                        <input type="text" id="ads-search" placeholder="Cari iklan...">
+                        <button id="ads-search-btn" class="search-btn">
+                            <span class="btn-icon">🔍</span>
+                        </button>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <select id="platform-filter">
+                            <option value="all">Semua Platform</option>
+                            <option value="adsterra">Adsterra</option>
+                            <option value="rollerads">RollerAds</option>
+                            <option value="google_adsense">Google AdSense</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <select id="status-filter">
+                            <option value="all">Semua Status</option>
+                            <option value="active">Aktif</option>
+                            <option value="inactive">Nonaktif</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="movies-table-container">
+                    <table class="movies-table">
+                        <thead>
+                            <tr>
+                                <th>Nama Iklan</th>
+                                <th>Platform</th>
+                                <th>Tipe</th>
+                                <th>Posisi</th>
+                                <th>Status</th>
+                                <th>Impresi</th>
+                                <th>Klik</th>
+                                <th>CTR</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ads-table-body">
+                            <tr>
+                                <td colspan="9" class="loading">
+                                    <div class="loading-spinner"></div>
+                                    Memuat data iklan...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Ad Modal -->
+    <div id="ad-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="ad-modal-title">➕ Tambah Iklan Baru</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="ad-form" class="ad-form">
+                    <div class="form-grid">
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label for="ad-name">Nama Iklan *</label>
+                                <input type="text" id="ad-name" name="ad_name" required 
+                                       placeholder="Masukkan nama iklan">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ad-platform">Platform Iklan *</label>
+                                <select id="ad-platform" name="platform" required>
+                                    <option value="adsterra">Adsterra</option>
+                                    <option value="rollerads">RollerAds</option>
+                                    <option value="google_adsense">Google AdSense</option>
+                                    <option value="custom">Custom</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ad-type">Tipe Iklan *</label>
+                                <select id="ad-type" name="ad_type" required>
+                                    <option value="banner">Banner</option>
+                                    <option value="popup">Popup</option>
+                                    <option value="interstitial">Interstitial</option>
+                                    <option value="native">Native</option>
+                                    <option value="video">Video</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ad-position">Posisi Iklan</label>
+                                <select id="ad-position" name="position">
+                                    <option value="header_top">Header Atas</option>
+                                    <option value="sidebar_left">Sidebar Kiri</option>
+                                    <option value="sidebar_right">Sidebar Kanan</option>
+                                    <option value="content_top">Atas Konten</option>
+                                    <option value="content_bottom">Bawah Konten</option>
+                                    <option value="footer">Footer</option>
+                                    <option value="center">Tengah Layar</option>
+                                    <option value="floating">Floating</option>
+                                </select>
+                                <small>Posisi tampil iklan di website</small>
+                            </div>
+                        </div>
+
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label for="ad-size">Ukuran Iklan</label>
+                                <select id="ad-size" name="ad_size">
+                                    <option value="auto">Auto</option>
+                                    <option value="728x90">728x90 (Leaderboard)</option>
+                                    <option value="468x60">468x60 (Banner)</option>
+                                    <option value="300x250">300x250 (Medium Rectangle)</option>
+                                    <option value="300x600">300x600 (Half Page)</option>
+                                    <option value="320x100">320x100 (Mobile Banner)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ad-code">Kode Iklan *</label>
+                                <textarea id="ad-code" name="ad_code" required 
+                                          placeholder="Masukkan kode iklan dari platform" 
+                                          rows="8"></textarea>
+                                <small>Paste kode iklan dari platform advertising</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ad-status">Status</label>
+                                <select id="ad-status" name="is_active">
+                                    <option value="true">Aktif</option>
+                                    <option value="false">Nonaktif</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ad-end-date">Tanggal Berakhir</label>
+                                <input type="datetime-local" id="ad-end-date" name="end_date">
+                                <small>Kosongkan jika iklan berjalan selamanya</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="submit-btn">
+                            <span class="btn-icon">💾</span> Simpan Iklan
+                        </button>
+                        <button type="button" id="cancel-ad-btn" class="cancel-btn">
+                            ❌ Batal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Memuat...</p>
+    </div>
+
+    <script type="module">
+        import { adManager, supabase } from './ads.js';
+
+        class AdminAdsManager {
+            constructor() {
+                this.ads = [];
+                this.currentEditId = null;
+                this.init();
+            }
+
+            async init() {
+                await this.loadAds();
+                this.setupEventListeners();
+                this.updateStats();
+            }
+
+            async loadAds() {
+                try {
+                    const { data: ads, error } = await supabase
+                        .from('ads')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+                    
+                    this.ads = ads || [];
+                    this.displayAds();
+
+                } catch (error) {
+                    console.error('Error loading ads:', error);
+                    this.showError('Gagal memuat data iklan');
+                }
+            }
+
+            displayAds() {
+                const tbody = document.getElementById('ads-table-body');
+                if (!tbody) return;
+
+                if (this.ads.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="9" class="no-data">
+                                <span class="no-data-icon">📭</span>
+                                <p>Belum ada iklan</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = this.ads.map(ad => {
+                    const ctr = ad.impressions > 0 ? ((ad.clicks / ad.impressions) * 100).toFixed(2) : '0.00';
+                    
+                    return `
+                        <tr>
+                            <td>
+                                <div class="movie-title">${ad.ad_name}</div>
+                            </td>
+                            <td>
+                                <span class="ad-platform-badge platform-${ad.platform}">
+                                    ${this.getPlatformName(ad.platform)}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="ad-type-badge type-${ad.ad_type}">
+                                    ${ad.ad_type}
+                                </span>
+                            </td>
+                            <td>${ad.position || '-'}</td>
+                            <td>
+                                <span class="status-${ad.is_active ? 'active' : 'inactive'}">
+                                    ${ad.is_active ? 'Aktif' : 'Nonaktif'}
+                                </span>
+                            </td>
+                            <td>${ad.impressions || 0}</td>
+                            <td>${ad.clicks || 0}</td>
+                            <td>${ctr}%</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="edit-btn" onclick="adminAds.editAd('${ad.id}')">
+                                        <span class="btn-icon">✏️</span> Edit
+                                    </button>
+                                    <button class="delete-btn" onclick="adminAds.deleteAd('${ad.id}')">
+                                        <span class="btn-icon">🗑️</span> Hapus
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            getPlatformName(platform) {
+                const platforms = {
+                    'adsterra': 'Adsterra',
+                    'rollerads': 'RollerAds',
+                    'google_adsense': 'Google Ads',
+                    'custom': 'Custom'
+                };
+                return platforms[platform] || platform;
+            }
+
+            updateStats() {
+                const totalAds = this.ads.length;
+                const activeAds = this.ads.filter(ad => ad.is_active).length;
+                const totalImpressions = this.ads.reduce((sum, ad) => sum + (ad.impressions || 0), 0);
+                const totalClicks = this.ads.reduce((sum, ad) => sum + (ad.clicks || 0), 0);
+
+                document.getElementById('total-ads').textContent = totalAds;
+                document.getElementById('active-ads').textContent = activeAds;
+                document.getElementById('total-impressions').textContent = totalImpressions;
+                document.getElementById('total-clicks').textContent = totalClicks;
+            }
+
+            setupEventListeners() {
+                // Add ad button
+                document.getElementById('add-ad-btn').addEventListener('click', () => {
+                    this.openAdModal();
+                });
+
+                // Ad form submission
+                document.getElementById('ad-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveAd();
+                });
+
+                // Cancel button
+                document.getElementById('cancel-ad-btn').addEventListener('click', () => {
+                    this.closeAdModal();
+                });
+
+                // Close modal
+                document.querySelector('#ad-modal .close-modal').addEventListener('click', () => {
+                    this.closeAdModal();
+                });
+
+                // Search functionality
+                document.getElementById('ads-search-btn').addEventListener('click', () => {
+                    this.handleSearch();
+                });
+
+                document.getElementById('ads-search').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.handleSearch();
+                });
+
+                // Filters
+                document.getElementById('platform-filter').addEventListener('change', () => {
+                    this.filterAds();
+                });
+
+                document.getElementById('status-filter').addEventListener('change', () => {
+                    this.filterAds();
+                });
+            }
+
+            openAdModal(ad = null) {
+                this.currentEditId = ad ? ad.id : null;
+                const modal = document.getElementById('ad-modal');
+                const title = document.getElementById('ad-modal-title');
+                const form = document.getElementById('ad-form');
+
+                if (ad) {
+                    title.textContent = '✏️ Edit Iklan';
+                    this.fillForm(ad);
+                } else {
+                    title.textContent = '➕ Tambah Iklan Baru';
+                    form.reset();
+                }
+
+                modal.style.display = 'block';
+            }
+
+            fillForm(ad) {
+                document.getElementById('ad-name').value = ad.ad_name;
+                document.getElementById('ad-platform').value = ad.platform;
+                document.getElementById('ad-type').value = ad.ad_type;
+                document.getElementById('ad-position').value = ad.position || '';
+                document.getElementById('ad-size').value = ad.ad_size || 'auto';
+                document.getElementById('ad-code').value = ad.ad_code;
+                document.getElementById('ad-status').value = ad.is_active.toString();
+                
+                if (ad.end_date) {
+                    const endDate = new Date(ad.end_date);
+                    document.getElementById('ad-end-date').value = endDate.toISOString().slice(0, 16);
+                }
+            }
+
+            async saveAd() {
+                const form = document.getElementById('ad-form');
+                const formData = new FormData(form);
+                const submitBtn = form.querySelector('.submit-btn');
+
+                const adData = {
+                    ad_name: formData.get('ad_name'),
+                    platform: formData.get('platform'),
+                    ad_type: formData.get('ad_type'),
+                    position: formData.get('position') || null,
+                    ad_size: formData.get('ad_size'),
+                    ad_code: formData.get('ad_code'),
+                    is_active: formData.get('is_active') === 'true',
+                    end_date: formData.get('end_date') || null
+                };
+
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="btn-icon">⏳</span> Menyimpan...';
+
+                try {
+                    let result;
+                    if (this.currentEditId) {
+                        result = await supabase
+                            .from('ads')
+                            .update(adData)
+                            .eq('id', this.currentEditId);
+                    } else {
+                        result = await supabase
+                            .from('ads')
+                            .insert([adData]);
+                    }
+
+                    if (result.error) throw result.error;
+
+                    this.showNotification(
+                        `Iklan berhasil ${this.currentEditId ? 'diupdate' : 'ditambahkan'}!`, 
+                        'success'
+                    );
+                    
+                    this.closeAdModal();
+                    await this.loadAds();
+                    this.updateStats();
+
+                } catch (error) {
+                    console.error('Error saving ad:', error);
+                    this.showNotification('Gagal menyimpan iklan', 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span class="btn-icon">💾</span> Simpan Iklan';
+                }
+            }
+
+            closeAdModal() {
+                document.getElementById('ad-modal').style.display = 'none';
+                this.currentEditId = null;
+            }
+
+            editAd(adId) {
+                const ad = this.ads.find(a => a.id === adId);
+                if (ad) {
+                    this.openAdModal(ad);
+                }
+            }
+
+            async deleteAd(adId) {
+                const ad = this.ads.find(a => a.id === adId);
+                if (!ad) return;
+
+                if (!confirm(`Apakah Anda yakin ingin menghapus iklan "${ad.ad_name}"?`)) {
+                    return;
+                }
+
+                try {
+                    const { error } = await supabase
+                        .from('ads')
+                        .delete()
+                        .eq('id', adId);
+
+                    if (error) throw error;
+
+                    this.showNotification('Iklan berhasil dihapus!', 'success');
+                    await this.loadAds();
+                    this.updateStats();
+
+                } catch (error) {
+                    console.error('Error deleting ad:', error);
+                    this.showNotification('Gagal menghapus iklan', 'error');
+                }
+            }
+
+            handleSearch() {
+                this.filterAds();
+            }
+
+            filterAds() {
+                const searchTerm = document.getElementById('ads-search').value.toLowerCase();
+                const platformFilter = document.getElementById('platform-filter').value;
+                const statusFilter = document.getElementById('status-filter').value;
+
+                let filteredAds = this.ads.filter(ad => {
+                    const matchesSearch = ad.ad_name.toLowerCase().includes(searchTerm);
+                    const matchesPlatform = platformFilter === 'all' || ad.platform === platformFilter;
+                    const matchesStatus = statusFilter === 'all' || 
+                        (statusFilter === 'active' && ad.is_active) ||
+                        (statusFilter === 'inactive' && !ad.is_active);
+
+                    return matchesSearch && matchesPlatform && matchesStatus;
+                });
+
+                this.displayFilteredAds(filteredAds);
+            }
+
+            displayFilteredAds(ads) {
+                const tbody = document.getElementById('ads-table-body');
+                if (!tbody) return;
+
+                if (ads.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="9" class="no-data">
+                                <span class="no-data-icon">🔍</span>
+                                <p>Tidak ada iklan yang ditemukan</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = ads.map(ad => {
+                    const ctr = ad.impressions > 0 ? ((ad.clicks / ad.impressions) * 100).toFixed(2) : '0.00';
+                    
+                    return `
+                        <tr>
+                            <td>${ad.ad_name}</td>
+                            <td>
+                                <span class="ad-platform-badge platform-${ad.platform}">
+                                    ${this.getPlatformName(ad.platform)}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="ad-type-badge type-${ad.ad_type}">
+                                    ${ad.ad_type}
+                                </span>
+                            </td>
+                            <td>${ad.position || '-'}</td>
+                            <td>
+                                <span class="status-${ad.is_active ? 'active' : 'inactive'}">
+                                    ${ad.is_active ? 'Aktif' : 'Nonaktif'}
+                                </span>
+                            </td>
+                            <td>${ad.impressions || 0}</td>
+                            <td>${ad.clicks || 0}</td>
+                            <td>${ctr}%</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="edit-btn" onclick="adminAds.editAd('${ad.id}')">
+                                        <span class="btn-icon">✏️</span> Edit
+                                    </button>
+                                    <button class="delete-btn" onclick="adminAds.deleteAd('${ad.id}')">
+                                        <span class="btn-icon">🗑️</span> Hapus
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification notification-${type}`;
+                notification.innerHTML = `
+                    <div class="notification-content">
+                        <span class="notification-icon">${this.getNotificationIcon(type)}</span>
+                        <span class="notification-message">${message}</span>
+                    </div>
+                `;
+
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 5000);
+            }
+
+            getNotificationIcon(type) {
+                const icons = {
+                    success: '✅',
+                    error: '❌',
+                    warning: '⚠️',
+                    info: 'ℹ️'
+                };
+                return icons[type] || 'ℹ️';
+            }
+
+            showError(message) {
+                this.showNotification(message, 'error');
+            }
+        }
+
+        // Initialize admin ads manager
+        const adminAds = new AdminAdsManager();
+        window.adminAds = adminAds;
+    </script>
+</body>
+</html>
