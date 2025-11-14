@@ -122,7 +122,7 @@
   });
   </script>
 
-  <!-- Script Pre-roll & Post-roll Ads -->
+  <!-- Script Pre-roll & Post-roll Ads dengan skip acak 5-30 detik -->
   <script>
   document.addEventListener('DOMContentLoaded', () => {
     const mainVideo = document.getElementById('video-player');
@@ -130,31 +130,29 @@
     const prerollVideo = document.getElementById('preroll-video');
     const skipBtn = document.getElementById('skip-preroll-btn');
 
-    // Contoh link pre-roll ad (bisa diganti dengan link Homely-Pass)
+    // Link pre-roll dan post-roll (ganti sesuai provider)
     const prerollSrc = 'https://homely-pass.com/d.m/F_zKd/GeNTvbZ/GaUv/BeIm/9guAZoUhlzkhPUTfYt3/M/DRMc4oM/DDYgt/NmjScgwnM/zBgawuNuwk';
-
-    // Contoh link post-roll ad (bisa disesuaikan)
     const postrollSrc = 'https://homely-pass.com/d.m/POSTROLL_LINK_CONTOH';
+
+    // Acak durasi skip (5-30 detik)
+    const skipTime = Math.floor(Math.random() * 26) + 5;
 
     // Pre-roll
     mainVideo.pause();
     prerollVideo.src = prerollSrc;
     prerollContainer.style.display = 'block';
 
-    // Tampilkan skip button setelah 5 detik
     prerollVideo.addEventListener('timeupdate', () => {
-      if (prerollVideo.currentTime >= 5) {
+      if (prerollVideo.currentTime >= skipTime) {
         skipBtn.style.display = 'block';
       }
     });
 
-    // Skip button
     skipBtn.addEventListener('click', () => {
       prerollContainer.style.display = 'none';
       mainVideo.play();
     });
 
-    // Setelah pre-roll selesai
     prerollVideo.addEventListener('ended', () => {
       prerollContainer.style.display = 'none';
       mainVideo.play();
