@@ -5,8 +5,15 @@
   padding: 20px 15px 40px;
 }
 
-/* ===== Back Button ===== */
-.back-btn {
+/* ===== Nav Buttons ===== */
+.nav-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.back-btn,
+.home-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -17,11 +24,11 @@
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.875rem;
-  margin-bottom: 18px;
   transition: background 0.2s, color 0.2s;
 }
 
-.back-btn:hover {
+.back-btn:hover,
+.home-btn:hover {
   background: #2a2a2a;
   color: #fff;
 }
