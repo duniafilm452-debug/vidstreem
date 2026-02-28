@@ -80,26 +80,31 @@
 
   <script type="module" src="detail.js"></script>
 
-  <!-- HilltopAds VATS: trigger iklan saat tombol play diklik -->
+  <!-- HilltopAds VATS: inject script saat tombol play diklik -->
   <script>
     (function () {
-      var AD_URL = 'https://aptpassage.com/dJmwF_z/d.GONRv/ZfGeUG/yeomn9OutZNUjl/kpPNTBYD3gMGDhM/4rM_DRYOteN/jGchweMYzlgMweN_wH';
-      var adFired  = false;
-      var overlay  = document.getElementById('ad-overlay');
-      var playBtn  = document.getElementById('play-with-ad');
-      var player   = document.getElementById('video-player');
+      var AD_URL  = 'https://aptpassage.com/dJmwF_z/d.GONRv/ZfGeUG/yeomn9OutZNUjl/kpPNTBYD3gMGDhM/4rM_DRYOteN/jGchweMYzlgMweN_wH';
+      var adFired = false;
+      var overlay = document.getElementById('ad-overlay');
+      var playBtn = document.getElementById('play-with-ad');
+      var player  = document.getElementById('video-player');
 
       function fireAd() {
-        if (!adFired) {
-          adFired = true;
-          // Buka iklan di tab baru (popunder — tidak blokir video)
-          var w = window.open(AD_URL, '_blank', 'noopener,noreferrer');
-          if (w) w.blur(); // Biarkan tab saat ini tetap fokus
-          window.focus();
-        }
+        if (adFired) return;
+        adFired = true;
+
+        // CARA BENAR untuk VATS: sisipkan <script src="..."> ke halaman
+        // Script HilltopAds akan merender unit iklan video secara otomatis
+        var s = document.createElement('script');
+        s.src   = AD_URL;
+        s.async = true;
+        s.onerror = function () {
+          console.warn('Ad script failed to load');
+        };
+        document.body.appendChild(s);
       }
 
-      // Tombol overlay diklik → sembunyikan overlay, mulai play, dan tembak iklan
+      // Klik tombol overlay → sembunyikan overlay, inject iklan, putar video
       if (playBtn) {
         playBtn.addEventListener('click', function () {
           fireAd();
@@ -108,7 +113,7 @@
         });
       }
 
-      // Fallback: jika user langsung klik kontrol native video (bypass overlay)
+      // Fallback: user klik kontrol native video langsung (bypass overlay)
       if (player) {
         player.addEventListener('play', fireAd, { once: true });
       }
