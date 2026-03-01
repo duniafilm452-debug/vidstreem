@@ -44,17 +44,18 @@
           </div>
         </div>
 
-        <!-- Container untuk IMA SDK merender iklan di sini -->
+        <!-- Container untuk IMA SDK merender iklan -->
         <div id="ad-container" style="
           position: absolute;
           inset: 0;
           z-index: 5;
           pointer-events: none;
+          display: none;
         "></div>
 
-        <!-- Video Player utama -->
+        <!-- Video Player utama — controls wajib ada agar bisa skip/seek -->
         <div class="video-container">
-          <video id="video-player" class="video-player" preload="metadata" playsinline></video>
+          <video id="video-player" class="video-player" controls preload="metadata" playsinline></video>
         </div>
 
       </div>
@@ -108,10 +109,19 @@
       var player      = document.getElementById('video-player');
       var adContainer = document.getElementById('ad-container');
 
-      // ===== IMA SDK =====
       var adsLoader, adsManager;
 
+      // Setelah iklan selesai: sembunyikan ad-container, kembalikan kontrol video
+      function adDone() {
+        adContainer.style.display      = 'none';
+        adContainer.style.pointerEvents = 'none';
+        player.play().catch(function () {});
+      }
+
       function initIMA() {
+        // Tampilkan ad-container hanya saat iklan berjalan
+        adContainer.style.display = 'block';
+
         var adDisplayContainer = new google.ima.AdDisplayContainer(adContainer, player);
         adDisplayContainer.initialize();
 
@@ -129,10 +139,10 @@
           false
         );
 
-        var adsRequest        = new google.ima.AdsRequest();
-        adsRequest.adTagUrl   = VAST_URL;
-        adsRequest.linearAdSlotWidth  = player.clientWidth  || 640;
-        adsRequest.linearAdSlotHeight = player.clientHeight || 360;
+        var adsRequest                   = new google.ima.AdsRequest();
+        adsRequest.adTagUrl              = VAST_URL;
+        adsRequest.linearAdSlotWidth     = player.clientWidth  || 640;
+        adsRequest.linearAdSlotHeight    = player.clientHeight || 360;
 
         adsLoader.requestAds(adsRequest);
       }
@@ -140,17 +150,18 @@
       function onAdsManagerLoaded(event) {
         adsManager = event.getAdsManager(player);
 
-        // Aktifkan klik saat iklan tayang
+        // Saat iklan mulai tayang: aktifkan klik (untuk tombol skip & klik iklan)
         adsManager.addEventListener(google.ima.AdEvent.Type.STARTED, function () {
           adContainer.style.pointerEvents = 'auto';
         });
 
-        // Iklan selesai / di-skip → putar video utama
-        adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_RESUME_REQUESTED, function () {
-          adContainer.style.pointerEvents = 'none';
-          player.play().catch(function () {});
-        });
+        // Iklan selesai atau di-skip → putar video utama
+        adsManager.addEventListener(
+          google.ima.AdEvent.Type.CONTENT_RESUME_REQUESTED,
+          adDone
+        );
 
+        // Semua event error → fallback putar video
         adsManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, onAdError);
 
         try {
@@ -161,16 +172,14 @@
           );
           adsManager.start();
         } catch (e) {
-          // IMA gagal init → langsung putar video
-          player.play().catch(function () {});
+          adDone();
         }
       }
 
       function onAdError(event) {
         console.warn('IMA Ad Error:', event.getError ? event.getError().toString() : event);
         if (adsManager) adsManager.destroy();
-        // Gagal muat iklan → tetap putar video
-        player.play().catch(function () {});
+        adDone(); // Gagal muat iklan → tetap putar video
       }
 
       function fireAd() {
@@ -206,7 +215,7 @@
         }, { once: true });
       }
 
-      // Resize handler agar iklan tetap pas
+      // Resize handler agar iklan tetap pas di layar
       window.addEventListener('resize', function () {
         if (adsManager) {
           adsManager.resize(
