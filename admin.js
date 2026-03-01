@@ -17,6 +17,9 @@ let selectedMovies = new Set();
 // Edit mode state — single source of truth
 let editingMovieId = null;
 
+// Guard: pastikan initApp() hanya dipanggil SEKALI
+let _appInitialized = false;
+
 // Thumbnail picker state
 let thumbVideoEl = null;
 let thumbCanvas = null;
@@ -30,6 +33,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function initApp() {
+  if (_appInitialized) return; // ← cegah pemanggilan ganda
+  _appInitialized = true;
+
   showLoading();
   setupFormSubmit();
   setupThumbPicker();
@@ -154,6 +160,7 @@ async function doAddMovie() {
   }
 
   const btn = document.getElementById('form-submit-btn');
+  if (btn.disabled) return; // ← cegah klik ganda / submit ganda
   btn.disabled = true;
   btn.textContent = '⏳ Menyimpan...';
 
