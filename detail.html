@@ -6,6 +6,9 @@
   <title>Detail Video - Vid18+</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="detail.css" />
+
+  <!-- Google IMA SDK untuk VAST -->
+  <script src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
 </head>
 <body>
 
@@ -32,17 +35,28 @@
 
       <!-- Wrapper Video + Overlay Iklan -->
       <div class="video-wrapper">
-        <!-- Overlay iklan (tampil sebelum play) -->
+
+        <!-- Overlay (tampil sebelum play) -->
         <div id="ad-overlay" class="ad-overlay">
           <div class="ad-overlay-inner">
             <p class="ad-label">⚡ Konten siap diputar</p>
             <button id="play-with-ad" class="play-ad-btn">▶ Putar Video</button>
           </div>
         </div>
-        <!-- Video Player -->
+
+        <!-- Container untuk IMA SDK merender iklan di sini -->
+        <div id="ad-container" style="
+          position: absolute;
+          inset: 0;
+          z-index: 5;
+          pointer-events: none;
+        "></div>
+
+        <!-- Video Player utama -->
         <div class="video-container">
-          <video id="video-player" class="video-player" controls preload="metadata"></video>
+          <video id="video-player" class="video-player" preload="metadata" playsinline></video>
         </div>
+
       </div>
 
       <!-- Info Video -->
@@ -83,43 +97,126 @@
 
   <script type="module" src="detail.js"></script>
 
-  <!-- HilltopAds VATS: inject script saat tombol play diklik -->
+  <!-- HilltopAds VAST via Google IMA SDK -->
   <script>
     (function () {
-      var AD_URL  = 'https://aptpassage.com/dJmwF_z/d.GONRv/ZfGeUG/yeomn9OutZNUjl/kpPNTBYD3gMGDhM/4rM_DRYOteN/jGchweMYzlgMweN_wH';
-      var adFired = false;
-      var overlay = document.getElementById('ad-overlay');
-      var playBtn = document.getElementById('play-with-ad');
-      var player  = document.getElementById('video-player');
+      var VAST_URL  = 'https://aptpassage.com/d.mEFLzOdsGXNWv/ZnGEUm/Tesmr9ou/ZLUxlKknP/TiYR3GMTDlMZ4JMTD_Ydt/N/jMcAwtM/zIgjwjNQyzZgsNacW/1-p/d/DM0LxZ';
+      var adFired   = false;
+
+      var overlay     = document.getElementById('ad-overlay');
+      var playBtn     = document.getElementById('play-with-ad');
+      var player      = document.getElementById('video-player');
+      var adContainer = document.getElementById('ad-container');
+
+      // ===== IMA SDK =====
+      var adsLoader, adsManager;
+
+      function initIMA() {
+        var adDisplayContainer = new google.ima.AdDisplayContainer(adContainer, player);
+        adDisplayContainer.initialize();
+
+        adsLoader = new google.ima.AdsLoader(adDisplayContainer);
+
+        adsLoader.addEventListener(
+          google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED,
+          onAdsManagerLoaded,
+          false
+        );
+
+        adsLoader.addEventListener(
+          google.ima.AdErrorEvent.Type.AD_ERROR,
+          onAdError,
+          false
+        );
+
+        var adsRequest        = new google.ima.AdsRequest();
+        adsRequest.adTagUrl   = VAST_URL;
+        adsRequest.linearAdSlotWidth  = player.clientWidth  || 640;
+        adsRequest.linearAdSlotHeight = player.clientHeight || 360;
+
+        adsLoader.requestAds(adsRequest);
+      }
+
+      function onAdsManagerLoaded(event) {
+        adsManager = event.getAdsManager(player);
+
+        // Aktifkan klik saat iklan tayang
+        adsManager.addEventListener(google.ima.AdEvent.Type.STARTED, function () {
+          adContainer.style.pointerEvents = 'auto';
+        });
+
+        // Iklan selesai / di-skip → putar video utama
+        adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_RESUME_REQUESTED, function () {
+          adContainer.style.pointerEvents = 'none';
+          player.play().catch(function () {});
+        });
+
+        adsManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, onAdError);
+
+        try {
+          adsManager.init(
+            player.clientWidth  || 640,
+            player.clientHeight || 360,
+            google.ima.ViewMode.NORMAL
+          );
+          adsManager.start();
+        } catch (e) {
+          // IMA gagal init → langsung putar video
+          player.play().catch(function () {});
+        }
+      }
+
+      function onAdError(event) {
+        console.warn('IMA Ad Error:', event.getError ? event.getError().toString() : event);
+        if (adsManager) adsManager.destroy();
+        // Gagal muat iklan → tetap putar video
+        player.play().catch(function () {});
+      }
 
       function fireAd() {
         if (adFired) return;
         adFired = true;
 
-        // CARA BENAR untuk VATS: sisipkan <script src="..."> ke halaman
-        // Script HilltopAds akan merender unit iklan video secara otomatis
-        var s = document.createElement('script');
-        s.src   = AD_URL;
-        s.async = true;
-        s.onerror = function () {
-          console.warn('Ad script failed to load');
-        };
-        document.body.appendChild(s);
+        // Sembunyikan overlay tombol play
+        if (overlay) overlay.style.display = 'none';
+
+        // Jalankan IMA SDK
+        if (window.google && window.google.ima) {
+          initIMA();
+        } else {
+          // IMA SDK belum termuat → langsung putar video
+          player.play().catch(function () {});
+        }
       }
 
-      // Klik tombol overlay → sembunyikan overlay, inject iklan, putar video
+      // Klik tombol overlay → jalankan iklan VAST
       if (playBtn) {
         playBtn.addEventListener('click', function () {
           fireAd();
-          if (overlay) overlay.style.display = 'none';
-          if (player)  player.play().catch(function () {});
         });
       }
 
-      // Fallback: user klik kontrol native video langsung (bypass overlay)
+      // Fallback: user bypass overlay → tahan video, jalankan iklan dulu
       if (player) {
-        player.addEventListener('play', fireAd, { once: true });
+        player.addEventListener('play', function () {
+          if (!adFired) {
+            player.pause();
+            fireAd();
+          }
+        }, { once: true });
       }
+
+      // Resize handler agar iklan tetap pas
+      window.addEventListener('resize', function () {
+        if (adsManager) {
+          adsManager.resize(
+            player.clientWidth  || 640,
+            player.clientHeight || 360,
+            google.ima.ViewMode.NORMAL
+          );
+        }
+      });
+
     })();
   </script>
 
